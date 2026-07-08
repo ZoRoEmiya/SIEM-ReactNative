@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -11,7 +11,7 @@ import colors from '../../src/styles/colors';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, user } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -42,6 +42,12 @@ export default function LoginScreen() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (user) {
+      router.replace('/dashboard');
+    }
+  }, [router, user]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
