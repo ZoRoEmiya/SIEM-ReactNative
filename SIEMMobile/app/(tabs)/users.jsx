@@ -10,6 +10,7 @@ import UserForm from '../../src/components/users/UserForm';
 import { useAuth } from '../../src/context/AuthContext';
 import { createUser, deleteUser, getUsers, updateUserRole } from '../../src/services/usersService';
 import colors from '../../src/styles/colors';
+import { isEmail, isPasswordLongEnough, isRequired } from '../../src/utils/validators';
 
 export default function UsersScreen() {
   const { user } = useAuth();
@@ -43,12 +44,17 @@ export default function UsersScreen() {
   const handleCreateUser = async () => {
     setFormError('');
 
-    if (!newEmail.trim()) {
+    if (!isRequired(newEmail)) {
       setFormError('Email is required');
       return;
     }
 
-    if (newPassword.length < 8) {
+    if (!isEmail(newEmail)) {
+      setFormError('Please provide a valid email address');
+      return;
+    }
+
+    if (!isPasswordLongEnough(newPassword)) {
       setFormError('Password must be at least 8 characters');
       return;
     }

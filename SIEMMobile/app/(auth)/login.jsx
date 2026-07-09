@@ -8,6 +8,7 @@ import StatusMessage from '../../src/components/common/StatusMessage';
 import { useAuth } from '../../src/context/AuthContext';
 import { loginUser } from '../../src/services/authService';
 import colors from '../../src/styles/colors';
+import { isRequired } from '../../src/utils/validators';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -20,12 +21,12 @@ export default function LoginScreen() {
   const handleLogin = async () => {
     setError('');
 
-    if (!email.trim()) {
+    if (!isRequired(email)) {
       setError('Email is required');
       return;
     }
 
-    if (!password) {
+    if (!isRequired(password)) {
       setError('Password is required');
       return;
     }

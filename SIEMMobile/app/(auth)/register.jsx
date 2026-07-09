@@ -8,6 +8,7 @@ import StatusMessage from '../../src/components/common/StatusMessage';
 import { useAuth } from '../../src/context/AuthContext';
 import { registerUser } from '../../src/services/authService';
 import colors from '../../src/styles/colors';
+import { isPasswordLongEnough, isRequired } from '../../src/utils/validators';
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -21,17 +22,17 @@ export default function RegisterScreen() {
   const handleRegister = async () => {
     setError('');
 
-    if (!companyName.trim()) {
+    if (!isRequired(companyName)) {
       setError('Company name is required');
       return;
     }
 
-    if (!email.trim()) {
+    if (!isRequired(email)) {
       setError('Email is required');
       return;
     }
 
-    if (password.length < 8) {
+    if (!isPasswordLongEnough(password)) {
       setError('Password must be at least 8 characters');
       return;
     }
