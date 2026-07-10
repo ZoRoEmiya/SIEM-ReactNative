@@ -39,6 +39,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="dashboard" options={{ title: 'Dashboard' }} />
       <Tabs.Screen name="logs" options={{ title: 'Logs' }} />
       <Tabs.Screen name="alerts" options={{ title: 'Alerts' }} />
+      <Tabs.Screen name="profile" options={{ title: 'Profile' }} />
       <Tabs.Screen name="apiKeys" options={{ title: 'API Keys', href: isAdmin ? '/apiKeys' : null }} />
       <Tabs.Screen name="users" options={{ title: 'Users', href: isAdmin ? '/users' : null }} />
     </Tabs>

@@ -1,7 +1,11 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { clearApiToken, setApiToken } from '../services/api';
-import { getCurrentUser } from '../services/authService';
+import {
+  deleteProfile as deleteProfileRequest,
+  getCurrentUser,
+  updateProfile as updateProfileRequest,
+} from '../services/authService';
 
 const TOKEN_KEY = 'siem_auth_token';
 
@@ -35,6 +39,20 @@ export const AuthProvider = ({ children }) => {
   const setAuth = (userData, tenantData) => {
     setUser(userData);
     setTenant(tenantData);
+  };
+
+  // Update the authenticated profile without changing the saved token.
+  const updateProfile = async (profileData) => {
+    const data = await updateProfileRequest(profileData);
+    setAuth(data.user, data.tenant);
+    return data;
+  };
+
+  // Delete the authenticated account and reuse the existing session cleanup.
+  const deleteAccount = async () => {
+    const data = await deleteProfileRequest();
+    await logout();
+    return data;
   };
 
   // Restore a saved JWT and verify it with the backend.
@@ -75,6 +93,8 @@ export const AuthProvider = ({ children }) => {
     isLoading,
     login,
     logout,
+    updateProfile,
+    deleteAccount,
     restoreSession,
     setAuth,
     setIsLoading,

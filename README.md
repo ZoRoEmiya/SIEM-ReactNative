@@ -83,6 +83,8 @@ The frontend will be available at `http://localhost:5173`
 - `POST /api/auth/register` - Register new user
 - `POST /api/auth/login` - User login
 - `GET /api/auth/me` - Get current user profile
+- `PATCH /api/auth/me` - Update current user email or password
+- `DELETE /api/auth/me` - Delete current user account
 
 ### Log Management
 - `GET /api/logs` - Retrieve logs (authenticated)

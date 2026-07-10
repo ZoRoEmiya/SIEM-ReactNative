@@ -160,3 +160,129 @@ export const me = async (req, res) => {
         });
     }
 };
+
+/**
+ * Update current authenticated user profile
+ * PATCH /api/auth/me (protected route)
+ */
+export const updateMe = async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                error: errors.array()[0].msg
+            });
+        }
+
+        const { userId } = req.user;
+        const { email, password } = req.body;
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({
+                error: 'User not found'
+            });
+        }
+
+        const tenant = await Tenant.findById(user.tenantId);
+        if (!tenant) {
+            return res.status(404).json({
+                error: 'User or tenant not found'
+            });
+        }
+
+        if (email !== undefined && email !== user.email) {
+            const existingUser = await User.findOne({
+                tenantId: user.tenantId,
+                email,
+                _id: { $ne: user._id }
+            });
+
+            if (existingUser) {
+                return res.status(409).json({
+                    error: 'Email already exists in your organization'
+                });
+            }
+
+            user.email = email;
+        }
+
+        if (password !== undefined) {
+            user.passwordHash = await hashApiKey(password, 10);
+        }
+
+        await user.save();
+
+        res.status(200).json({
+            user: {
+                id: user._id,
+                email: user.email,
+                role: user.role
+            },
+            tenant: {
+                id: tenant._id,
+                name: tenant.name
+            }
+        });
+    } catch (error) {
+        console.error('Update profile error:', error);
+
+        if (error.code === 11000) {
+            return res.status(409).json({
+                error: 'Email already exists in your organization'
+            });
+        }
+
+        res.status(500).json({
+            error: 'Failed to update user profile.'
+        });
+    }
+};
+
+/**
+ * Delete current authenticated user account
+ * DELETE /api/auth/me (protected route)
+ */
+export const deleteMe = async (req, res) => {
+    try {
+        const { userId, tenantId } = req.user;
+
+        const user = await User.findOne({
+            _id: userId,
+            tenantId
+        });
+
+        if (!user) {
+            return res.status(404).json({
+                error: 'User not found'
+            });
+        }
+
+        if (user.role === 'admin') {
+            const adminCount = await User.countDocuments({
+                tenantId,
+                role: 'admin'
+            });
+
+            if (adminCount <= 1) {
+                return res.status(400).json({
+                    error: 'Cannot delete the last admin in your organization'
+                });
+            }
+        }
+
+        await User.deleteOne({
+            _id: userId,
+            tenantId
+        });
+
+        res.status(200).json({
+            message: 'Account deleted successfully'
+        });
+    } catch (error) {
+        console.error('Delete profile error:', error);
+        res.status(500).json({
+            error: 'Failed to delete user account.'
+        });
+    }
+};
