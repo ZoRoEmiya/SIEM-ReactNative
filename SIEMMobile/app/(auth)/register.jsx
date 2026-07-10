@@ -4,16 +4,20 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AppButton from '../../src/components/common/AppButton';
 import AppTextInput from '../../src/components/common/AppTextInput';
+import LanguageSwitcher from '../../src/components/common/LanguageSwitcher';
 import StatusMessage from '../../src/components/common/StatusMessage';
 import { useAuth } from '../../src/context/AuthContext';
+import { useLanguage } from '../../src/context/LanguageContext';
 import { useTheme } from '../../src/context/ThemeContext';
 import { useOrientation } from '../../src/hooks/useOrientation';
+import i18n from '../../src/localization/i18n';
 import { registerUser } from '../../src/services/authService';
 import { isPasswordLongEnough, isRequired } from '../../src/utils/validators';
 
 export default function RegisterScreen() {
   const router = useRouter();
   const { login, user } = useAuth();
+  const { isHebrew } = useLanguage();
   const { theme } = useTheme();
   const { isLandscape } = useOrientation();
   const styles = createStyles(theme);
@@ -27,17 +31,17 @@ export default function RegisterScreen() {
     setError('');
 
     if (!isRequired(companyName)) {
-      setError('Company name is required');
+      setError(i18n.t('authCompanyNameRequired'));
       return;
     }
 
     if (!isRequired(email)) {
-      setError('Email is required');
+      setError(i18n.t('authEmailRequired'));
       return;
     }
 
     if (!isPasswordLongEnough(password)) {
-      setError('Password must be at least 8 characters');
+      setError(i18n.t('authPasswordMinimum'));
       return;
     }
 
@@ -48,7 +52,7 @@ export default function RegisterScreen() {
       await login(data.user, data.tenant, data.token);
       router.replace('/dashboard');
     } catch (err) {
-      setError(err.error || 'Registration failed. Please try again.');
+      setError(err.error || i18n.t('authRegistrationFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -76,44 +80,46 @@ export default function RegisterScreen() {
           keyboardShouldPersistTaps="handled"
         >
           <View style={[styles.card, isLandscape && styles.cardLandscape]}>
-            <Text style={styles.logo}>SIEM Portal</Text>
-            <Text style={styles.title}>Create Account</Text>
-            <Text style={styles.subtitle}>Start monitoring your security today</Text>
+            <LanguageSwitcher />
+            <Text style={styles.logo}>{i18n.t('authPortalName')}</Text>
+            <Text style={styles.title}>{i18n.t('authRegisterTitle')}</Text>
+            <Text style={[styles.subtitle, isHebrew && styles.rtlText]}>{i18n.t('authRegisterSubtitle')}</Text>
 
             <StatusMessage message={error} />
 
             <AppTextInput
-              label="Company Name"
+              label={i18n.t('authCompanyNameLabel')}
               value={companyName}
               onChangeText={setCompanyName}
-              placeholder="Acme Corporation"
+              placeholder={i18n.t('authCompanyNamePlaceholder')}
               editable={!isLoading}
             />
 
             <AppTextInput
-              label="Email Address"
+              label={i18n.t('authEmailLabel')}
               value={email}
               onChangeText={setEmail}
-              placeholder="name@company.com"
+              placeholder={i18n.t('authEmailPlaceholder')}
               keyboardType="email-address"
+              forceLtr
               editable={!isLoading}
             />
 
             <AppTextInput
-              label="Password"
+              label={i18n.t('authPasswordLabel')}
               value={password}
               onChangeText={setPassword}
-              placeholder="Minimum 8 characters"
+              placeholder={i18n.t('authRegisterPasswordPlaceholder')}
               secureTextEntry
               editable={!isLoading}
             />
 
-            <AppButton title="Create Account" onPress={handleRegister} loading={isLoading} />
+            <AppButton title={i18n.t('authCreateAccount')} onPress={handleRegister} loading={isLoading} />
 
             <View style={styles.footer}>
-              <Text style={styles.footerText}>Already have an account?</Text>
+              <Text style={[styles.footerText, isHebrew && styles.rtlText]}>{i18n.t('authAlreadyHaveAccount')}</Text>
               <Pressable onPress={() => router.push('/login')} disabled={isLoading}>
-                <Text style={styles.link}>Sign in instead</Text>
+                <Text style={[styles.link, isHebrew && styles.rtlText]}>{i18n.t('authSignInInstead')}</Text>
               </Pressable>
             </View>
           </View>
@@ -187,5 +193,9 @@ const createStyles = (theme) => StyleSheet.create({
     color: theme.primary,
     fontSize: 15,
     fontWeight: '700',
+  },
+  rtlText: {
+    textAlign: 'right',
+    writingDirection: 'rtl',
   },
 });

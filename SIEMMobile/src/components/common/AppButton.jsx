@@ -1,8 +1,10 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
+import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 
 export default function AppButton({ title, onPress, disabled, loading, variant = 'primary' }) {
   const { theme } = useTheme();
+  const { isHebrew } = useLanguage();
   const styles = createStyles(theme);
   const isDisabled = disabled || loading;
 
@@ -23,7 +25,7 @@ export default function AppButton({ title, onPress, disabled, loading, variant =
       {loading ? (
         <ActivityIndicator color={theme.disabledText} />
       ) : (
-        <Text style={[styles.text, variant === 'secondary' && styles.secondaryText, isDisabled && styles.disabledText]}>
+        <Text style={[styles.text, isHebrew && styles.rtlText, variant === 'secondary' && styles.secondaryText, isDisabled && styles.disabledText]}>
           {title}
         </Text>
       )}
@@ -71,5 +73,8 @@ const createStyles = (theme) => StyleSheet.create({
   },
   disabledText: {
     color: theme.disabledText,
+  },
+  rtlText: {
+    writingDirection: 'rtl',
   },
 });

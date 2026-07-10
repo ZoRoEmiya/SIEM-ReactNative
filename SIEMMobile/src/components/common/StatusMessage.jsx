@@ -1,8 +1,10 @@
 import { StyleSheet, Text, View } from 'react-native';
+import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 
 export default function StatusMessage({ message, type = 'error' }) {
   const { theme } = useTheme();
+  const { isHebrew } = useLanguage();
   const styles = createStyles(theme);
 
   if (!message) {
@@ -13,7 +15,7 @@ export default function StatusMessage({ message, type = 'error' }) {
 
   return (
     <View style={[styles.box, isError ? styles.errorBox : styles.successBox]}>
-      <Text style={[styles.text, isError ? styles.errorText : styles.successText]}>{message}</Text>
+      <Text style={[styles.text, isHebrew && styles.rtlText, isError ? styles.errorText : styles.successText]}>{message}</Text>
     </View>
   );
 }
@@ -42,5 +44,9 @@ const createStyles = (theme) => StyleSheet.create({
   },
   successText: {
     color: theme.success,
+  },
+  rtlText: {
+    textAlign: 'right',
+    writingDirection: 'rtl',
   },
 });
