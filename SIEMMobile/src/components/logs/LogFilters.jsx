@@ -1,11 +1,22 @@
 import { StyleSheet, Text, View } from 'react-native';
 import AppButton from '../common/AppButton';
 import AppTextInput from '../common/AppTextInput';
+import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
+import i18n from '../../localization/i18n';
+import { getLogLevelLabel } from '../../localization/labels';
 
 export default function LogFilters({ filters, onChange, onApply, onClear, loading, isLandscape }) {
   const { theme } = useTheme();
+  const { isHebrew } = useLanguage();
   const styles = createStyles(theme);
+  const levelOptions = [
+    { value: '', label: i18n.t('commonAll') },
+    ...['info', 'warn', 'error', 'critical'].map((value) => ({
+      value,
+      label: getLogLevelLabel(value),
+    })),
+  ];
 
   const updateFilter = (name, value) => {
     onChange({
@@ -16,49 +27,49 @@ export default function LogFilters({ filters, onChange, onApply, onClear, loadin
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Filters</Text>
-      <View style={styles.levelRow}>
-        {['', 'info', 'warn', 'error', 'critical'].map((level) => (
+      <Text style={[styles.title, isHebrew && styles.rtlText]}>{i18n.t('logFiltersTitle')}</Text>
+      <View style={[styles.levelRow, isHebrew && styles.rowRtl]}>
+        {levelOptions.map((option) => (
           <Text
-            key={level || 'all'}
-            style={[styles.levelButton, filters.level === level && styles.levelButtonActive]}
-            onPress={() => updateFilter('level', level)}
+            key={option.value || 'all'}
+            style={[styles.levelButton, filters.level === option.value && styles.levelButtonActive]}
+            onPress={() => updateFilter('level', option.value)}
           >
-            {level || 'all'}
+            {option.label}
           </Text>
         ))}
       </View>
 
       <View style={isLandscape ? styles.fieldsLandscape : styles.fieldsPortrait}>
         <View style={isLandscape ? styles.fieldLandscape : styles.fieldPortrait}>
-          <AppTextInput label="Search" value={filters.q} onChangeText={(value) => updateFilter('q', value)} placeholder="Search message" editable={!loading} />
+          <AppTextInput label={i18n.t('logFilterSearch')} value={filters.q} onChangeText={(value) => updateFilter('q', value)} placeholder={i18n.t('logFilterSearchPlaceholder')} editable={!loading} />
         </View>
         <View style={isLandscape ? styles.fieldLandscape : styles.fieldPortrait}>
-          <AppTextInput label="Source" value={filters.source} onChangeText={(value) => updateFilter('source', value)} placeholder="Source system" editable={!loading} />
+          <AppTextInput label={i18n.t('logsSource')} value={filters.source} onChangeText={(value) => updateFilter('source', value)} placeholder={i18n.t('logFilterSourcePlaceholder')} editable={!loading} forceLtr />
         </View>
         <View style={isLandscape ? styles.fieldLandscape : styles.fieldPortrait}>
-          <AppTextInput label="Event Type" value={filters.eventType} onChangeText={(value) => updateFilter('eventType', value)} placeholder="Event type" editable={!loading} />
+          <AppTextInput label={i18n.t('logsEventType')} value={filters.eventType} onChangeText={(value) => updateFilter('eventType', value)} placeholder={i18n.t('logFilterEventTypePlaceholder')} editable={!loading} forceLtr />
         </View>
         <View style={isLandscape ? styles.fieldLandscape : styles.fieldPortrait}>
-          <AppTextInput label="IP" value={filters.ip} onChangeText={(value) => updateFilter('ip', value)} placeholder="IP address" editable={!loading} />
+          <AppTextInput label={i18n.t('logsIp')} value={filters.ip} onChangeText={(value) => updateFilter('ip', value)} placeholder={i18n.t('logFilterIpPlaceholder')} editable={!loading} forceLtr />
         </View>
         <View style={isLandscape ? styles.fieldLandscape : styles.fieldPortrait}>
-          <AppTextInput label="User" value={filters.user} onChangeText={(value) => updateFilter('user', value)} placeholder="Username" editable={!loading} />
+          <AppTextInput label={i18n.t('logsUser')} value={filters.user} onChangeText={(value) => updateFilter('user', value)} placeholder={i18n.t('logFilterUserPlaceholder')} editable={!loading} forceLtr />
         </View>
         <View style={isLandscape ? styles.fieldLandscape : styles.fieldPortrait}>
-          <AppTextInput label="From" value={filters.from} onChangeText={(value) => updateFilter('from', value)} placeholder="2026-07-09T10:00:00.000Z" editable={!loading} />
+          <AppTextInput label={i18n.t('logFilterFrom')} value={filters.from} onChangeText={(value) => updateFilter('from', value)} placeholder="2026-07-09T10:00:00.000Z" editable={!loading} forceLtr />
         </View>
         <View style={isLandscape ? styles.fieldLandscape : styles.fieldPortrait}>
-          <AppTextInput label="To" value={filters.to} onChangeText={(value) => updateFilter('to', value)} placeholder="2026-07-09T12:00:00.000Z" editable={!loading} />
+          <AppTextInput label={i18n.t('logFilterTo')} value={filters.to} onChangeText={(value) => updateFilter('to', value)} placeholder="2026-07-09T12:00:00.000Z" editable={!loading} forceLtr />
         </View>
       </View>
 
-      <View style={[styles.actions, isLandscape ? styles.actionsLandscape : styles.actionsPortrait]}>
+      <View style={[styles.actions, isLandscape ? styles.actionsLandscape : styles.actionsPortrait, isLandscape && isHebrew && styles.rowRtl]}>
         <View style={isLandscape ? styles.actionLandscape : styles.actionPortrait}>
-          <AppButton title="Apply" onPress={onApply} loading={loading} />
+          <AppButton title={i18n.t('commonApply')} onPress={onApply} loading={loading} />
         </View>
         <View style={isLandscape ? styles.actionLandscape : styles.actionPortrait}>
-          <AppButton title="Clear" onPress={onClear} disabled={loading} variant="secondary" />
+          <AppButton title={i18n.t('commonClear')} onPress={onClear} disabled={loading} variant="secondary" />
         </View>
       </View>
     </View>
@@ -85,6 +96,9 @@ const createStyles = (theme) => StyleSheet.create({
     flexWrap: 'wrap',
     gap: 8,
     marginBottom: 12,
+  },
+  rowRtl: {
+    flexDirection: 'row-reverse',
   },
   levelButton: {
     overflow: 'hidden',
@@ -132,5 +146,9 @@ const createStyles = (theme) => StyleSheet.create({
   },
   actionLandscape: {
     flex: 1,
+  },
+  rtlText: {
+    textAlign: 'right',
+    writingDirection: 'rtl',
   },
 });

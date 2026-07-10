@@ -1,27 +1,31 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
+import i18n from '../../localization/i18n';
+import { getLogLevelLabel } from '../../localization/labels';
 import { formatDateTime } from '../../utils/formatDate';
 
 export default function LogCard({ log, onPress }) {
   const { theme } = useTheme();
+  const { isHebrew } = useLanguage();
   const styles = createStyles(theme);
 
   return (
     <Pressable style={styles.card} onPress={onPress}>
-      <View style={styles.header}>
-        <Text style={[styles.level, styles[`level_${log.level}`]]}>{log.level || 'info'}</Text>
+      <View style={[styles.header, isHebrew && styles.rowRtl]}>
+        <Text style={[styles.level, styles[`level_${log.level}`]]}>{getLogLevelLabel(log.level || 'info')}</Text>
         <Text style={styles.time}>{formatDateTime(log.ts)}</Text>
       </View>
       <Text style={styles.message} numberOfLines={2}>
-        {log.message || 'No message'}
+        {log.message || i18n.t('logsNoMessage')}
       </Text>
       <View style={styles.metaRow}>
-        <Text style={styles.meta}>{log.eventType || 'event'}</Text>
-        <Text style={styles.meta}>{log.source || 'source'}</Text>
+        <Text style={styles.meta}>{log.eventType || i18n.t('logsEventFallback')}</Text>
+        <Text style={styles.meta}>{log.source || i18n.t('logsSourceFallback')}</Text>
       </View>
       <View style={styles.metaRow}>
-        <Text style={styles.meta}>{log.ip || 'No IP'}</Text>
-        <Text style={styles.meta}>{log.user || 'No user'}</Text>
+        <Text style={styles.meta}>{log.ip || i18n.t('logsNoIp')}</Text>
+        <Text style={styles.meta}>{log.user || i18n.t('logsNoUser')}</Text>
       </View>
     </Pressable>
   );
@@ -42,6 +46,9 @@ const createStyles = (theme) => StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     marginBottom: 8,
+  },
+  rowRtl: {
+    flexDirection: 'row-reverse',
   },
   level: {
     overflow: 'hidden',
@@ -71,6 +78,7 @@ const createStyles = (theme) => StyleSheet.create({
     color: theme.mutedText,
     fontSize: 12,
     textAlign: 'right',
+    writingDirection: 'ltr',
   },
   message: {
     color: theme.text,

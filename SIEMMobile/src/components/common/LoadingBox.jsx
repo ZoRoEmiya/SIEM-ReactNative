@@ -1,8 +1,9 @@
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
+import i18n from '../../localization/i18n';
 
-export default function LoadingBox({ message = 'Loading...' }) {
+export default function LoadingBox({ message = i18n.t('commonLoading') }) {
   const { theme } = useTheme();
   const { isHebrew } = useLanguage();
   const styles = createStyles(theme);

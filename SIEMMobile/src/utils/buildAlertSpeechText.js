@@ -1,4 +1,6 @@
 import { formatDateTime } from './formatDate';
+import i18n from '../localization/i18n';
+import { getAlertSeverityLabel, getAlertStatusLabel } from '../localization/labels';
 
 /**
  * Format an alert value for readable speech
@@ -50,35 +52,35 @@ const formatEntities = (entities) => {
  */
 export const buildAlertSpeechText = (alert) => {
   if (!alert) {
-    return 'Security alert details are not available.';
+    return i18n.t('alertSpeechUnavailable');
   }
 
-  const parts = ['Security alert'];
+  const parts = [i18n.t('alertSpeechIntro')];
 
   if (alert.ruleName) {
-    parts.push(`Rule: ${alert.ruleName}`);
+    parts.push(i18n.t('alertSpeechRule', { value: alert.ruleName }));
   }
 
   if (alert.severity) {
-    parts.push(`Severity: ${alert.severity}`);
+    parts.push(i18n.t('alertSpeechSeverity', { value: getAlertSeverityLabel(alert.severity) }));
   }
 
   if (alert.status) {
-    parts.push(`Status: ${alert.status}`);
+    parts.push(i18n.t('alertSpeechStatus', { value: getAlertStatusLabel(alert.status) }));
   }
 
   if (alert.ts) {
-    parts.push(`Time: ${formatDateTime(alert.ts)}`);
+    parts.push(i18n.t('alertSpeechTime', { value: formatDateTime(alert.ts) }));
   }
 
   if (alert.description) {
-    parts.push(`Description: ${alert.description}`);
+    parts.push(i18n.t('alertSpeechDescription', { value: alert.description }));
   }
 
   const entitiesText = formatEntities(alert.entities);
 
   if (entitiesText) {
-    parts.push(`Entities: ${entitiesText}`);
+    parts.push(i18n.t('alertSpeechEntities', { value: entitiesText }));
   }
 
   return parts.join('. ');
