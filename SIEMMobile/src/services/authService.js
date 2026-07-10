@@ -35,3 +35,21 @@ export const getCurrentUser = async () => {
     throw getApiError(error, 'Failed to fetch user info');
   }
 };
+
+export const updateProfile = async (profileData) => {
+  try {
+    const response = await api.patch('/auth/me', profileData);
+    return response.data;
+  } catch (error) {
+    throw getApiError(error, 'Failed to update profile');
+  }
+};
+
+export const deleteProfile = async () => {
+  try {
+    const response = await api.delete('/auth/me');
+    return response.data;
+  } catch (error) {
+    throw getApiError(error, 'Failed to delete account');
+  }
+};
