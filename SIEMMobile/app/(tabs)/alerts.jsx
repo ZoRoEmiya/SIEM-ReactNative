@@ -8,8 +8,8 @@ import LoadingBox from '../../src/components/common/LoadingBox';
 import StatusMessage from '../../src/components/common/StatusMessage';
 import AlertCard from '../../src/components/alerts/AlertCard';
 import AlertDetails from '../../src/components/alerts/AlertDetails';
+import { useTheme } from '../../src/context/ThemeContext';
 import { getAlerts, updateAlertStatus } from '../../src/services/alertsService';
-import colors from '../../src/styles/colors';
 
 const LIMIT = 25;
 const emptyFilters = {
@@ -21,6 +21,8 @@ const emptyFilters = {
 };
 
 export default function AlertsScreen() {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
   const [alerts, setAlerts] = useState([]);
   const [filters, setFilters] = useState(emptyFilters);
   const [page, setPage] = useState({ limit: LIMIT, skip: 0, total: 0 });
@@ -192,7 +194,14 @@ export default function AlertsScreen() {
             </View>
           ) : null
         }
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={[theme.primary]}
+            tintColor={theme.primary}
+          />
+        }
       />
 
       <Modal visible={Boolean(selectedAlert)} animationType="slide" onRequestClose={closeDetails}>
@@ -214,6 +223,9 @@ export default function AlertsScreen() {
 }
 
 function ChoiceRow({ label, value, options, onChange }) {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
+
   return (
     <View style={styles.choiceGroup}>
       <Text style={styles.choiceLabel}>{label}</Text>
@@ -232,10 +244,10 @@ function ChoiceRow({ label, value, options, onChange }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme) => StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: theme.background,
   },
   container: {
     padding: 24,
@@ -244,24 +256,24 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '700',
-    color: colors.text,
+    color: theme.text,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: colors.muted,
+    color: theme.mutedText,
     marginBottom: 16,
   },
   filters: {
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: theme.border,
     borderRadius: 8,
     padding: 14,
     marginBottom: 16,
   },
   filterTitle: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 18,
     fontWeight: '800',
     marginBottom: 12,
@@ -270,7 +282,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   choiceLabel: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 14,
     fontWeight: '700',
     marginBottom: 8,
@@ -284,24 +296,24 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.border,
-    color: colors.text,
+    borderColor: theme.border,
+    color: theme.text,
     paddingHorizontal: 10,
     paddingVertical: 6,
     fontSize: 13,
     fontWeight: '700',
   },
   choiceButtonActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-    color: '#ffffff',
+    backgroundColor: theme.primary,
+    borderColor: theme.primary,
+    color: theme.headerText,
   },
   filterActions: {
     gap: 10,
     marginTop: 4,
   },
   pageText: {
-    color: colors.muted,
+    color: theme.mutedText,
     fontSize: 14,
     marginBottom: 12,
   },
@@ -311,6 +323,6 @@ const styles = StyleSheet.create({
   },
   modalSafeArea: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: theme.background,
   },
 });

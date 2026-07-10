@@ -1,12 +1,13 @@
 import { Redirect, Tabs, useRouter } from 'expo-router';
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 import LoadingBox from '../../src/components/common/LoadingBox';
 import { useAuth } from '../../src/context/AuthContext';
-import colors from '../../src/styles/colors';
+import { useTheme } from '../../src/context/ThemeContext';
 
 export default function TabsLayout() {
   const router = useRouter();
   const { user, isLoading, logout } = useAuth();
+  const { theme, isDarkMode, toggleTheme } = useTheme();
   const isAdmin = user?.role === 'admin';
 
   const handleLogout = async () => {
@@ -25,14 +26,30 @@ export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        headerStyle: { backgroundColor: '#0f172a' },
-        headerTintColor: '#ffffff',
-        tabBarActiveTintColor: '#2563eb',
-        tabBarInactiveTintColor: '#64748b',
+        headerStyle: { backgroundColor: theme.headerBackground },
+        headerTintColor: theme.headerText,
+        headerTitleStyle: { color: theme.headerText },
+        tabBarStyle: {
+          backgroundColor: theme.tabBarBackground,
+          borderTopColor: theme.border,
+        },
+        tabBarActiveTintColor: theme.tabBarActive,
+        tabBarInactiveTintColor: theme.tabBarInactive,
         headerRight: () => (
-          <Pressable style={styles.logoutButton} onPress={handleLogout}>
-            <Text style={styles.logoutText}>Sign Out</Text>
-          </Pressable>
+          <View style={styles.headerActions}>
+            <View style={styles.themeControl}>
+              <Text style={[styles.themeLabel, { color: theme.headerText }]}>Dark</Text>
+              <Switch
+                trackColor={{ false: theme.border, true: theme.primary }}
+                thumbColor={theme.headerText}
+                value={isDarkMode}
+                onValueChange={toggleTheme}
+              />
+            </View>
+            <Pressable style={styles.logoutButton} onPress={handleLogout}>
+              <Text style={[styles.logoutText, { color: theme.headerText }]}>Sign Out</Text>
+            </Pressable>
+          </View>
         ),
       }}
     >
@@ -47,12 +64,24 @@ export default function TabsLayout() {
 }
 
 const styles = StyleSheet.create({
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  themeControl: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  themeLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
   logoutButton: {
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
   logoutText: {
-    color: colors.card,
     fontSize: 14,
     fontWeight: '700',
   },

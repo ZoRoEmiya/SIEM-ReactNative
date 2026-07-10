@@ -1,9 +1,12 @@
 import { StyleSheet, Text, View } from 'react-native';
 import AppButton from '../common/AppButton';
 import AppTextInput from '../common/AppTextInput';
-import colors from '../../styles/colors';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function UserForm({ email, password, role, onChangeEmail, onChangePassword, onChangeRole, onSubmit, onCancel, loading }) {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
+
   return (
     <View style={styles.container}>
       <AppTextInput label="Email" value={email} onChangeText={onChangeEmail} placeholder="user@example.com" keyboardType="email-address" editable={!loading} />
@@ -28,12 +31,12 @@ export default function UserForm({ email, password, role, onChangeEmail, onChang
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme) => StyleSheet.create({
   container: {
     gap: 4,
   },
   label: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 14,
     fontWeight: '700',
     marginBottom: 8,
@@ -48,17 +51,17 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.border,
-    color: colors.text,
+    borderColor: theme.border,
+    color: theme.text,
     paddingHorizontal: 10,
     paddingVertical: 6,
     fontSize: 13,
     fontWeight: '700',
   },
   roleButtonActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-    color: '#ffffff',
+    backgroundColor: theme.primary,
+    borderColor: theme.primary,
+    color: theme.headerText,
   },
   actions: {
     gap: 10,

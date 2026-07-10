@@ -4,7 +4,7 @@ import Slider from '@react-native-community/slider';
 import * as Speech from 'expo-speech';
 import AppButton from '../common/AppButton';
 import StatusMessage from '../common/StatusMessage';
-import colors from '../../styles/colors';
+import { useTheme } from '../../context/ThemeContext';
 import { buildAlertSpeechText } from '../../utils/buildAlertSpeechText';
 import { formatDateTime } from '../../utils/formatDate';
 
@@ -20,6 +20,8 @@ import { formatDateTime } from '../../utils/formatDate';
  * @returns {JSX.Element|null} Alert details content
  */
 export default function AlertDetails({ alert, onClose, onToggleStatus, updating, message, error }) {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
   const [rate, setRate] = useState(1);
   const [pitch, setPitch] = useState(1);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -154,9 +156,9 @@ export default function AlertDetails({ alert, onClose, onToggleStatus, updating,
           minimumValue={0.5}
           maximumValue={2}
           step={0.1}
-          minimumTrackTintColor={colors.primary}
-          maximumTrackTintColor={colors.border}
-          thumbTintColor={colors.primary}
+          minimumTrackTintColor={theme.primary}
+          maximumTrackTintColor={theme.border}
+          thumbTintColor={theme.primary}
         />
 
         <View style={styles.sliderHeader}>
@@ -169,9 +171,9 @@ export default function AlertDetails({ alert, onClose, onToggleStatus, updating,
           minimumValue={0.5}
           maximumValue={2}
           step={0.1}
-          minimumTrackTintColor={colors.primary}
-          maximumTrackTintColor={colors.border}
-          thumbTintColor={colors.primary}
+          minimumTrackTintColor={theme.primary}
+          maximumTrackTintColor={theme.border}
+          thumbTintColor={theme.primary}
         />
 
         <View style={styles.speechActions}>
@@ -202,6 +204,9 @@ export default function AlertDetails({ alert, onClose, onToggleStatus, updating,
  * @returns {JSX.Element} Alert detail row
  */
 function DetailRow({ label, value }) {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
+
   return (
     <View style={styles.row}>
       <Text style={styles.label}>{label}</Text>
@@ -210,52 +215,52 @@ function DetailRow({ label, value }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme) => StyleSheet.create({
   container: {
     padding: 24,
     paddingBottom: 40,
   },
   title: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 24,
     fontWeight: '800',
     marginBottom: 16,
   },
   row: {
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: theme.border,
     borderRadius: 8,
     padding: 12,
     marginBottom: 10,
   },
   label: {
-    color: colors.muted,
+    color: theme.mutedText,
     fontSize: 13,
     marginBottom: 4,
     textTransform: 'capitalize',
   },
   value: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 15,
     fontWeight: '700',
   },
   sectionTitle: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 18,
     fontWeight: '800',
     marginTop: 8,
     marginBottom: 10,
   },
   emptyText: {
-    color: colors.muted,
+    color: theme.mutedText,
     fontSize: 14,
     marginBottom: 16,
   },
   speechBox: {
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: theme.border,
     borderRadius: 8,
     padding: 12,
     marginBottom: 16,
@@ -267,12 +272,12 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   sliderLabel: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 14,
     fontWeight: '700',
   },
   sliderValue: {
-    color: colors.muted,
+    color: theme.mutedText,
     fontSize: 14,
     fontWeight: '700',
   },

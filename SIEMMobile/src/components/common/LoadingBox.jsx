@@ -1,25 +1,28 @@
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
-import colors from '../../styles/colors';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function LoadingBox({ message = 'Loading...' }) {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
+
   return (
     <View style={styles.container}>
-      <ActivityIndicator size="large" color={colors.primary} />
+      <ActivityIndicator size="large" color={theme.primary} />
       <Text style={styles.text}>{message}</Text>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.background,
+    backgroundColor: theme.background,
     padding: 24,
   },
   text: {
-    color: colors.muted,
+    color: theme.mutedText,
     fontSize: 16,
     marginTop: 12,
   },

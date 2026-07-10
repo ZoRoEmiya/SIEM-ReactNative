@@ -1,7 +1,9 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
-import colors from '../../styles/colors';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function AppButton({ title, onPress, disabled, loading, variant = 'primary' }) {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
   const isDisabled = disabled || loading;
 
   return (
@@ -9,48 +11,65 @@ export default function AppButton({ title, onPress, disabled, loading, variant =
       style={({ pressed }) => [
         styles.button,
         variant === 'secondary' && styles.secondary,
+        variant === 'danger' && styles.danger,
         isDisabled && styles.disabled,
-        pressed && !isDisabled && styles.pressed,
+        pressed && !isDisabled && variant === 'primary' && styles.primaryPressed,
+        pressed && !isDisabled && variant === 'secondary' && styles.secondaryPressed,
+        pressed && !isDisabled && variant === 'danger' && styles.dangerPressed,
       ]}
       onPress={onPress}
       disabled={isDisabled}
     >
       {loading ? (
-        <ActivityIndicator color="#ffffff" />
+        <ActivityIndicator color={theme.disabledText} />
       ) : (
-        <Text style={[styles.text, variant === 'secondary' && styles.secondaryText]}>{title}</Text>
+        <Text style={[styles.text, variant === 'secondary' && styles.secondaryText, isDisabled && styles.disabledText]}>
+          {title}
+        </Text>
       )}
     </Pressable>
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme) => StyleSheet.create({
   button: {
     minHeight: 48,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.primary,
+    backgroundColor: theme.primary,
     borderRadius: 8,
     paddingHorizontal: 18,
     paddingVertical: 12,
   },
   secondary: {
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: theme.border,
+  },
+  danger: {
+    backgroundColor: theme.danger,
   },
   disabled: {
-    backgroundColor: colors.disabled,
+    backgroundColor: theme.disabled,
   },
-  pressed: {
-    backgroundColor: colors.primaryDark,
+  primaryPressed: {
+    backgroundColor: theme.primaryPressed,
+  },
+  secondaryPressed: {
+    backgroundColor: theme.surface,
+  },
+  dangerPressed: {
+    backgroundColor: theme.dangerPressed,
   },
   text: {
-    color: '#ffffff',
+    color: theme.headerText,
     fontSize: 16,
     fontWeight: '700',
   },
   secondaryText: {
-    color: colors.text,
+    color: theme.text,
+  },
+  disabledText: {
+    color: theme.disabledText,
   },
 });
