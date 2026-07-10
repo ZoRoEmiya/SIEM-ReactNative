@@ -8,13 +8,17 @@ import StatusMessage from '../../src/components/common/StatusMessage';
 import UserCard from '../../src/components/users/UserCard';
 import UserForm from '../../src/components/users/UserForm';
 import { useAuth } from '../../src/context/AuthContext';
+import { useLanguage } from '../../src/context/LanguageContext';
 import { useTheme } from '../../src/context/ThemeContext';
 import { useOrientation } from '../../src/hooks/useOrientation';
+import i18n from '../../src/localization/i18n';
+import { getUserRoleLabel } from '../../src/localization/labels';
 import { createUser, deleteUser, getUsers, updateUserRole } from '../../src/services/usersService';
 import { isEmail, isPasswordLongEnough, isRequired } from '../../src/utils/validators';
 
 export default function UsersScreen() {
   const { user } = useAuth();
+  const { isHebrew } = useLanguage();
   const { theme } = useTheme();
   const { isLandscape, width, height } = useOrientation();
   const styles = createStyles(theme);
@@ -46,7 +50,7 @@ export default function UsersScreen() {
       const data = await getUsers();
       setUsers(data || []);
     } catch (err) {
-      setError(err.error || 'Failed to load users');
+      setError(err.error || i18n.t('usersFailedToLoad'));
     } finally {
       setIsLoading(false);
     }
@@ -56,17 +60,17 @@ export default function UsersScreen() {
     setFormError('');
 
     if (!isRequired(newEmail)) {
-      setFormError('Email is required');
+      setFormError(i18n.t('authEmailRequired'));
       return;
     }
 
     if (!isEmail(newEmail)) {
-      setFormError('Please provide a valid email address');
+      setFormError(i18n.t('validationValidEmail'));
       return;
     }
 
     if (!isPasswordLongEnough(newPassword)) {
-      setFormError('Password must be at least 8 characters');
+      setFormError(i18n.t('authPasswordMinimum'));
       return;
     }
 
@@ -80,7 +84,7 @@ export default function UsersScreen() {
       setNewRole('viewer');
       await fetchUsers();
     } catch (err) {
-      setFormError(err.error || 'Failed to create user');
+      setFormError(err.error || i18n.t('usersFailedToCreate'));
     } finally {
       setWorking(false);
     }
@@ -99,7 +103,7 @@ export default function UsersScreen() {
       setUsers(users.map((item) => (item.id === roleUser.id ? { ...item, role } : item)));
       setRoleUser();
     } catch (err) {
-      setError(err.error || 'Failed to update user role');
+      setError(err.error || i18n.t('usersFailedToUpdateRole'));
     } finally {
       setWorking(false);
     }
@@ -118,7 +122,7 @@ export default function UsersScreen() {
       setUsers(users.filter((item) => item.id !== deleteTarget.id));
       setDeleteTarget();
     } catch (err) {
-      setError(err.error || 'Failed to delete user');
+      setError(err.error || i18n.t('usersFailedToDelete'));
     } finally {
       setWorking(false);
     }
@@ -134,15 +138,15 @@ export default function UsersScreen() {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={[styles.container, isLandscape ? styles.containerLandscape : styles.containerPortrait]}>
-          <Text style={styles.title}>Access Denied</Text>
-          <Text style={styles.text}>You don't have permission to view this page.</Text>
+          <Text style={[styles.title, isHebrew && styles.rtlText]}>{i18n.t('commonAccessDenied')}</Text>
+          <Text style={[styles.text, isHebrew && styles.rtlText]}>{i18n.t('commonNoPermission')}</Text>
         </View>
       </SafeAreaView>
     );
   }
 
   if (isLoading && !users.length) {
-    return <LoadingBox message="Loading users..." />;
+    return <LoadingBox message={i18n.t('usersLoading')} />;
   }
 
   return (
@@ -168,13 +172,13 @@ export default function UsersScreen() {
         ]}
         ListHeaderComponent={
           <View>
-            <Text style={styles.title}>User Management</Text>
-            <Text style={styles.text}>Manage users in your organization.</Text>
+            <Text style={[styles.title, isHebrew && styles.rtlText]}>{i18n.t('usersTitle')}</Text>
+            <Text style={[styles.text, isHebrew && styles.rtlText]}>{i18n.t('usersSubtitle')}</Text>
             <StatusMessage message={error} />
-            <AppButton title="Add User" onPress={() => setShowCreate(true)} />
+            <AppButton title={i18n.t('usersAddAction')} onPress={() => setShowCreate(true)} />
           </View>
         }
-        ListEmptyComponent={<EmptyState title="No users found" message="Add a user to this organization." />}
+        ListEmptyComponent={<EmptyState title={i18n.t('usersEmptyTitle')} message={i18n.t('usersEmptyMessage')} />}
       />
 
       <Modal visible={showCreate} animationType="slide" onRequestClose={() => setShowCreate(false)}>
@@ -188,7 +192,7 @@ export default function UsersScreen() {
               modalDimensions,
             ]}
           >
-            <Text style={styles.modalTitle}>Add New User</Text>
+            <Text style={[styles.modalTitle, isHebrew && styles.rtlText]}>{i18n.t('usersAddTitle')}</Text>
             <StatusMessage message={formError} />
             <UserForm
               email={newEmail}
@@ -217,19 +221,19 @@ export default function UsersScreen() {
               confirmDimensions,
             ]}
           >
-            <Text style={styles.confirmTitle}>Change Role</Text>
-            <Text style={styles.text}>{roleUser?.email}</Text>
-            <View style={[styles.roleActions, isLandscape ? styles.roleActionsLandscape : styles.roleActionsPortrait]}>
+            <Text style={[styles.confirmTitle, isHebrew && styles.rtlText]}>{i18n.t('usersChangeRoleTitle')}</Text>
+            <Text style={[styles.text, styles.technicalText]}>{roleUser?.email}</Text>
+            <View style={[styles.roleActions, isLandscape ? styles.roleActionsLandscape : styles.roleActionsPortrait, isLandscape && isHebrew && styles.rowRtl]}>
               {['viewer', 'analyst', 'admin'].map((role) => (
                 <AppButton
                   key={role}
-                  title={role}
+                  title={getUserRoleLabel(role)}
                   onPress={() => handleUpdateRole(role)}
                   disabled={working || roleUser?.role === role}
                   variant={roleUser?.role === role ? 'secondary' : 'primary'}
                 />
               ))}
-              <AppButton title="Cancel" onPress={() => setRoleUser()} disabled={working} variant="secondary" />
+              <AppButton title={i18n.t('commonCancel')} onPress={() => setRoleUser()} disabled={working} variant="secondary" />
             </View>
           </View>
         </View>
@@ -246,11 +250,13 @@ export default function UsersScreen() {
               confirmDimensions,
             ]}
           >
-            <Text style={styles.confirmTitle}>Delete User</Text>
-            <Text style={styles.text}>Delete {deleteTarget?.email}? This action cannot be undone.</Text>
+            <Text style={[styles.confirmTitle, isHebrew && styles.rtlText]}>{i18n.t('usersDeleteTitle')}</Text>
+            <Text style={[styles.text, isHebrew && styles.rtlText]}>
+              {i18n.t('usersDeleteMessage', { email: deleteTarget?.email })}
+            </Text>
             <View style={styles.roleActions}>
-              <AppButton title="Delete" onPress={handleDeleteUser} loading={working} variant="danger" />
-              <AppButton title="Cancel" onPress={() => setDeleteTarget()} disabled={working} variant="secondary" />
+              <AppButton title={i18n.t('commonDelete')} onPress={handleDeleteUser} loading={working} variant="danger" />
+              <AppButton title={i18n.t('commonCancel')} onPress={() => setDeleteTarget()} disabled={working} variant="secondary" />
             </View>
           </View>
         </View>
@@ -345,5 +351,16 @@ const createStyles = (theme) => StyleSheet.create({
   roleActionsLandscape: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+  },
+  rowRtl: {
+    flexDirection: 'row-reverse',
+  },
+  rtlText: {
+    textAlign: 'right',
+    writingDirection: 'rtl',
+  },
+  technicalText: {
+    textAlign: 'left',
+    writingDirection: 'ltr',
   },
 });

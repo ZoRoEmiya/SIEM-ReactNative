@@ -1,4 +1,5 @@
 import api, { getApiError } from './api';
+import i18n from '../localization/i18n';
 
 export const getStats = async (range = '24h') => {
   try {
@@ -8,6 +9,6 @@ export const getStats = async (range = '24h') => {
 
     return response.data;
   } catch (error) {
-    throw getApiError(error, 'Failed to fetch statistics');
+    throw getApiError(error, i18n.t('dashboardFailedToLoad'));
   }
 };

@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import StatusMessage from '../common/StatusMessage';
+import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
+import i18n from '../../localization/i18n';
 
 export default function DeleteAccountSection({ onDelete, disabled, onWorkingChange }) {
   const { theme } = useTheme();
+  const { isHebrew } = useLanguage();
   const styles = createStyles(theme);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -22,7 +25,7 @@ export default function DeleteAccountSection({ onDelete, disabled, onWorkingChan
     try {
       await onDelete();
     } catch (err) {
-      setError(err.error || 'Failed to delete account');
+      setError(err.error || i18n.t('profileDeleteFailed'));
       setIsLoading(false);
       onWorkingChange(false);
     }
@@ -35,15 +38,15 @@ export default function DeleteAccountSection({ onDelete, disabled, onWorkingChan
 
     setError('');
     Alert.alert(
-      'Delete Account',
-      'Are you sure you want to permanently delete your account? This action cannot be undone.',
+      i18n.t('profileDeleteTitle'),
+      i18n.t('profileDeleteConfirmation'),
       [
         {
-          text: 'Cancel',
+          text: i18n.t('commonCancel'),
           style: 'cancel',
         },
         {
-          text: 'Delete Account',
+          text: i18n.t('profileDeleteTitle'),
           style: 'destructive',
           onPress: handleDelete,
         },
@@ -53,10 +56,8 @@ export default function DeleteAccountSection({ onDelete, disabled, onWorkingChan
 
   return (
     <View style={styles.section}>
-      <Text style={styles.title}>Delete Account</Text>
-      <Text style={styles.warning}>
-        Permanently delete your account and end this session. The final administrator in an organization cannot be deleted.
-      </Text>
+      <Text style={[styles.title, isHebrew && styles.rtlText]}>{i18n.t('profileDeleteTitle')}</Text>
+      <Text style={[styles.warning, isHebrew && styles.rtlText]}>{i18n.t('profileDeleteWarning')}</Text>
 
       <StatusMessage message={error} />
 
@@ -72,7 +73,7 @@ export default function DeleteAccountSection({ onDelete, disabled, onWorkingChan
         {isLoading ? (
           <ActivityIndicator color={theme.disabledText} />
         ) : (
-          <Text style={[styles.deleteButtonText, isDisabled && styles.disabledButtonText]}>Delete My Account</Text>
+          <Text style={[styles.deleteButtonText, isHebrew && styles.rtlText, isDisabled && styles.disabledButtonText]}>{i18n.t('profileDeleteAction')}</Text>
         )}
       </Pressable>
     </View>
@@ -121,5 +122,9 @@ const createStyles = (theme) => StyleSheet.create({
   },
   disabledButtonText: {
     color: theme.disabledText,
+  },
+  rtlText: {
+    textAlign: 'right',
+    writingDirection: 'rtl',
   },
 });

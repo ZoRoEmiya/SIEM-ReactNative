@@ -1,12 +1,14 @@
+import i18n from '../localization/i18n';
+
 export const formatDateTime = (dateString) => {
   if (!dateString) {
-    return 'N/A';
+    return i18n.t('commonNotAvailable');
   }
 
   const date = new Date(dateString);
 
   if (Number.isNaN(date.getTime())) {
-    return 'N/A';
+    return i18n.t('commonNotAvailable');
   }
 
   return date.toLocaleString('en-US', {

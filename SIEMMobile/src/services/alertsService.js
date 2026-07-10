@@ -1,4 +1,5 @@
 import api, { cleanParams, getApiError } from './api';
+import i18n from '../localization/i18n';
 
 export const getAlerts = async (filters = {}) => {
   try {
@@ -8,7 +9,7 @@ export const getAlerts = async (filters = {}) => {
 
     return response.data;
   } catch (error) {
-    throw getApiError(error, 'Failed to fetch alerts');
+    throw getApiError(error, i18n.t('alertsFailedToLoad'));
   }
 };
 
@@ -17,6 +18,6 @@ export const updateAlertStatus = async (id, status) => {
     const response = await api.patch(`/alerts/${id}`, { status });
     return response.data;
   } catch (error) {
-    throw getApiError(error, 'Failed to update alert status');
+    throw getApiError(error, i18n.t('alertsUpdateFailed'));
   }
 };

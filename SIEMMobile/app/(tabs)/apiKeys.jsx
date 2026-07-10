@@ -8,12 +8,15 @@ import StatusMessage from '../../src/components/common/StatusMessage';
 import ApiKeyCard from '../../src/components/apiKeys/ApiKeyCard';
 import ApiKeyForm from '../../src/components/apiKeys/ApiKeyForm';
 import { useAuth } from '../../src/context/AuthContext';
+import { useLanguage } from '../../src/context/LanguageContext';
 import { useTheme } from '../../src/context/ThemeContext';
 import { useOrientation } from '../../src/hooks/useOrientation';
+import i18n from '../../src/localization/i18n';
 import { createApiKey, getApiKeys, revokeApiKey } from '../../src/services/apiKeysService';
 
 export default function ApiKeysScreen() {
   const { user } = useAuth();
+  const { isHebrew } = useLanguage();
   const { theme } = useTheme();
   const { isLandscape, width, height } = useOrientation();
   const styles = createStyles(theme);
@@ -44,7 +47,7 @@ export default function ApiKeysScreen() {
       const data = await getApiKeys();
       setItems(data || []);
     } catch (err) {
-      setError(err.message || err.error || 'Failed to load API keys');
+      setError(err.message || err.error || i18n.t('apiKeysFailedToLoad'));
     } finally {
       setIsLoading(false);
     }
@@ -54,7 +57,7 @@ export default function ApiKeysScreen() {
     setFormError('');
 
     if (!newKeyName.trim()) {
-      setFormError('Name is required');
+      setFormError(i18n.t('apiKeysNameRequired'));
       return;
     }
 
@@ -67,7 +70,7 @@ export default function ApiKeysScreen() {
       setNewKeyName('');
       await fetchKeys();
     } catch (err) {
-      setFormError(err.message || err.error || 'Failed to create API key');
+      setFormError(err.message || err.error || i18n.t('apiKeysFailedToCreate'));
     } finally {
       setCreating(false);
     }
@@ -86,7 +89,7 @@ export default function ApiKeysScreen() {
       setItems(items.map((item) => (item.id === keyToRevoke.id ? { ...item, enabled: false } : item)));
       setKeyToRevoke();
     } catch (err) {
-      setError(err.message || err.error || 'Failed to revoke API key');
+      setError(err.message || err.error || i18n.t('apiKeysFailedToRevoke'));
     } finally {
       setRevokingId();
     }
@@ -102,15 +105,15 @@ export default function ApiKeysScreen() {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={[styles.container, isLandscape ? styles.containerLandscape : styles.containerPortrait]}>
-          <Text style={styles.title}>Access Denied</Text>
-          <Text style={styles.text}>You don't have permission to view this page.</Text>
+          <Text style={[styles.title, isHebrew && styles.rtlText]}>{i18n.t('commonAccessDenied')}</Text>
+          <Text style={[styles.text, isHebrew && styles.rtlText]}>{i18n.t('commonNoPermission')}</Text>
         </View>
       </SafeAreaView>
     );
   }
 
   if (isLoading && !items.length) {
-    return <LoadingBox message="Loading API keys..." />;
+    return <LoadingBox message={i18n.t('apiKeysLoading')} />;
   }
 
   return (
@@ -133,13 +136,13 @@ export default function ApiKeysScreen() {
         ]}
         ListHeaderComponent={
           <View>
-            <Text style={styles.title}>API Key Management</Text>
-            <Text style={styles.text}>Manage ingest API keys.</Text>
+            <Text style={[styles.title, isHebrew && styles.rtlText]}>{i18n.t('apiKeysTitle')}</Text>
+            <Text style={[styles.text, isHebrew && styles.rtlText]}>{i18n.t('apiKeysSubtitle')}</Text>
             <StatusMessage message={error} />
-            <AppButton title="Create API Key" onPress={() => setShowCreate(true)} />
+            <AppButton title={i18n.t('apiKeysCreateAction')} onPress={() => setShowCreate(true)} />
           </View>
         }
-        ListEmptyComponent={<EmptyState title="No API keys yet" message="Create one to start ingesting logs." />}
+        ListEmptyComponent={<EmptyState title={i18n.t('apiKeysEmptyTitle')} message={i18n.t('apiKeysEmptyMessage')} />}
       />
 
       <Modal visible={showCreate} animationType="slide" onRequestClose={() => setShowCreate(false)}>
@@ -153,7 +156,7 @@ export default function ApiKeysScreen() {
               modalDimensions,
             ]}
           >
-            <Text style={styles.modalTitle}>Create API Key</Text>
+            <Text style={[styles.modalTitle, isHebrew && styles.rtlText]}>{i18n.t('apiKeysCreateAction')}</Text>
             <StatusMessage message={formError} />
             <ApiKeyForm
               name={newKeyName}
@@ -178,10 +181,10 @@ export default function ApiKeysScreen() {
               modalDimensions,
             ]}
           >
-            <Text style={styles.modalTitle}>API Key Created</Text>
-            <Text style={styles.warning}>Save this key now. You will not see it again.</Text>
+            <Text style={[styles.modalTitle, isHebrew && styles.rtlText]}>{i18n.t('apiKeysCreatedTitle')}</Text>
+            <Text style={[styles.warning, isHebrew && styles.rtlText]}>{i18n.t('apiKeysSaveWarning')}</Text>
             <Text style={styles.rawKey}>{rawKey}</Text>
-            <AppButton title="I've Saved the Key" onPress={() => setRawKey('')} />
+            <AppButton title={i18n.t('apiKeysSavedAction')} onPress={() => setRawKey('')} />
           </ScrollView>
         </SafeAreaView>
       </Modal>
@@ -197,11 +200,13 @@ export default function ApiKeysScreen() {
               confirmDimensions,
             ]}
           >
-            <Text style={styles.confirmTitle}>Revoke API Key</Text>
-            <Text style={styles.text}>Revoke {keyToRevoke?.name}? Ingest will stop for systems using this key.</Text>
+            <Text style={[styles.confirmTitle, isHebrew && styles.rtlText]}>{i18n.t('apiKeysRevokeTitle')}</Text>
+            <Text style={[styles.text, isHebrew && styles.rtlText]}>
+              {i18n.t('apiKeysRevokeMessage', { name: keyToRevoke?.name })}
+            </Text>
             <View style={styles.confirmActions}>
-              <AppButton title="Revoke" onPress={handleRevoke} loading={Boolean(revokingId)} variant="danger" />
-              <AppButton title="Cancel" onPress={() => setKeyToRevoke()} disabled={Boolean(revokingId)} variant="secondary" />
+              <AppButton title={i18n.t('apiKeysRevokeAction')} onPress={handleRevoke} loading={Boolean(revokingId)} variant="danger" />
+              <AppButton title={i18n.t('commonCancel')} onPress={() => setKeyToRevoke()} disabled={Boolean(revokingId)} variant="secondary" />
             </View>
           </View>
         </View>
@@ -277,6 +282,8 @@ const createStyles = (theme) => StyleSheet.create({
     padding: 12,
     marginBottom: 16,
     fontSize: 13,
+    textAlign: 'left',
+    writingDirection: 'ltr',
   },
   confirmOverlay: {
     flex: 1,
@@ -305,5 +312,9 @@ const createStyles = (theme) => StyleSheet.create({
   confirmActions: {
     gap: 10,
     marginTop: 14,
+  },
+  rtlText: {
+    textAlign: 'right',
+    writingDirection: 'rtl',
   },
 });
