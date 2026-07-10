@@ -5,11 +5,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import DeleteAccountSection from '../../src/components/profile/DeleteAccountSection';
 import ProfileForm from '../../src/components/profile/ProfileForm';
 import { useAuth } from '../../src/context/AuthContext';
-import colors from '../../src/styles/colors';
+import { useTheme } from '../../src/context/ThemeContext';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { user, tenant, updateProfile, deleteAccount } = useAuth();
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
   const [requestActive, setRequestActive] = useState(false);
 
   const handleDeleteAccount = async () => {
@@ -55,6 +57,9 @@ export default function ProfileScreen() {
 }
 
 function DetailRow({ label, value }) {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
+
   return (
     <View style={styles.detailRow}>
       <Text style={styles.detailLabel}>{label}</Text>
@@ -63,10 +68,10 @@ function DetailRow({ label, value }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme) => StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: theme.background,
   },
   keyboardView: {
     flex: 1,
@@ -76,42 +81,42 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   title: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 28,
     fontWeight: '700',
     marginBottom: 8,
   },
   subtitle: {
-    color: colors.muted,
+    color: theme.mutedText,
     fontSize: 16,
     marginBottom: 18,
   },
   detailsCard: {
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: theme.border,
     borderRadius: 8,
     padding: 16,
     marginBottom: 20,
   },
   sectionTitle: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 20,
     fontWeight: '800',
     marginBottom: 12,
   },
   detailRow: {
     borderTopWidth: 1,
-    borderTopColor: '#e2e8f0',
+    borderTopColor: theme.border,
     paddingVertical: 12,
   },
   detailLabel: {
-    color: colors.muted,
+    color: theme.mutedText,
     fontSize: 13,
     marginBottom: 4,
   },
   detailValue: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 16,
     fontWeight: '700',
   },

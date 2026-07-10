@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import StatusMessage from '../common/StatusMessage';
-import colors from '../../styles/colors';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function DeleteAccountSection({ onDelete, disabled, onWorkingChange }) {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const isDisabled = isLoading || disabled;
@@ -68,31 +70,31 @@ export default function DeleteAccountSection({ onDelete, disabled, onWorkingChan
         disabled={isDisabled}
       >
         {isLoading ? (
-          <ActivityIndicator color="#ffffff" />
+          <ActivityIndicator color={theme.disabledText} />
         ) : (
-          <Text style={styles.deleteButtonText}>Delete My Account</Text>
+          <Text style={[styles.deleteButtonText, isDisabled && styles.disabledButtonText]}>Delete My Account</Text>
         )}
       </Pressable>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme) => StyleSheet.create({
   section: {
-    backgroundColor: '#fef2f2',
+    backgroundColor: theme.dangerBackground,
     borderWidth: 1,
-    borderColor: '#fecaca',
+    borderColor: theme.dangerBorder,
     borderRadius: 8,
     padding: 16,
   },
   title: {
-    color: colors.danger,
+    color: theme.danger,
     fontSize: 20,
     fontWeight: '800',
     marginBottom: 8,
   },
   warning: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 14,
     lineHeight: 20,
     marginBottom: 16,
@@ -101,20 +103,23 @@ const styles = StyleSheet.create({
     minHeight: 48,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.danger,
+    backgroundColor: theme.danger,
     borderRadius: 8,
     paddingHorizontal: 18,
     paddingVertical: 12,
   },
   disabledButton: {
-    backgroundColor: colors.disabled,
+    backgroundColor: theme.disabled,
   },
   pressedButton: {
-    backgroundColor: '#b91c1c',
+    backgroundColor: theme.dangerPressed,
   },
   deleteButtonText: {
-    color: '#ffffff',
+    color: theme.headerText,
     fontSize: 16,
     fontWeight: '700',
+  },
+  disabledButtonText: {
+    color: theme.disabledText,
   },
 });

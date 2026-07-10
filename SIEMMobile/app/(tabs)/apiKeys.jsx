@@ -8,11 +8,13 @@ import StatusMessage from '../../src/components/common/StatusMessage';
 import ApiKeyCard from '../../src/components/apiKeys/ApiKeyCard';
 import ApiKeyForm from '../../src/components/apiKeys/ApiKeyForm';
 import { useAuth } from '../../src/context/AuthContext';
+import { useTheme } from '../../src/context/ThemeContext';
 import { createApiKey, getApiKeys, revokeApiKey } from '../../src/services/apiKeysService';
-import colors from '../../src/styles/colors';
 
 export default function ApiKeysScreen() {
   const { user } = useAuth();
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
   const [items, setItems] = useState([]);
   const [newKeyName, setNewKeyName] = useState('');
   const [rawKey, setRawKey] = useState('');
@@ -159,7 +161,7 @@ export default function ApiKeysScreen() {
             <Text style={styles.confirmTitle}>Revoke API Key</Text>
             <Text style={styles.text}>Revoke {keyToRevoke?.name}? Ingest will stop for systems using this key.</Text>
             <View style={styles.confirmActions}>
-              <AppButton title="Revoke" onPress={handleRevoke} loading={Boolean(revokingId)} />
+              <AppButton title="Revoke" onPress={handleRevoke} loading={Boolean(revokingId)} variant="danger" />
               <AppButton title="Cancel" onPress={() => setKeyToRevoke()} disabled={Boolean(revokingId)} variant="secondary" />
             </View>
           </View>
@@ -169,10 +171,10 @@ export default function ApiKeysScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme) => StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: theme.background,
   },
   container: {
     padding: 24,
@@ -181,39 +183,39 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: '700',
-    color: colors.text,
+    color: theme.text,
     marginBottom: 8,
   },
   text: {
     fontSize: 16,
-    color: colors.muted,
+    color: theme.mutedText,
     marginBottom: 16,
   },
   modalSafeArea: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: theme.background,
   },
   modalContainer: {
     padding: 24,
     paddingBottom: 40,
   },
   modalTitle: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 24,
     fontWeight: '800',
     marginBottom: 16,
   },
   warning: {
-    color: colors.danger,
+    color: theme.danger,
     fontSize: 15,
     fontWeight: '700',
     marginBottom: 12,
   },
   rawKey: {
-    color: colors.text,
-    backgroundColor: colors.card,
+    color: theme.text,
+    backgroundColor: theme.card,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: theme.border,
     borderRadius: 8,
     padding: 12,
     marginBottom: 16,
@@ -222,16 +224,16 @@ const styles = StyleSheet.create({
   confirmOverlay: {
     flex: 1,
     justifyContent: 'center',
-    backgroundColor: 'rgba(15, 23, 42, 0.55)',
+    backgroundColor: theme.modalBackdrop,
     padding: 24,
   },
   confirmBox: {
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
     borderRadius: 8,
     padding: 18,
   },
   confirmTitle: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 20,
     fontWeight: '800',
     marginBottom: 8,

@@ -1,7 +1,10 @@
 import { StyleSheet, Text, View } from 'react-native';
-import colors from '../../styles/colors';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function StatusMessage({ message, type = 'error' }) {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
+
   if (!message) {
     return null;
   }
@@ -15,26 +18,29 @@ export default function StatusMessage({ message, type = 'error' }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme) => StyleSheet.create({
   box: {
     borderRadius: 8,
+    borderWidth: 1,
     padding: 12,
     marginBottom: 16,
   },
   errorBox: {
-    backgroundColor: '#fee2e2',
+    backgroundColor: theme.dangerBackground,
+    borderColor: theme.dangerBorder,
   },
   successBox: {
-    backgroundColor: '#dcfce7',
+    backgroundColor: theme.successBackground,
+    borderColor: theme.successBorder,
   },
   text: {
     fontSize: 14,
     fontWeight: '600',
   },
   errorText: {
-    color: colors.danger,
+    color: theme.danger,
   },
   successText: {
-    color: colors.success,
+    color: theme.success,
   },
 });

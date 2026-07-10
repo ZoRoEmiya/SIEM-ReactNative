@@ -6,13 +6,15 @@ import EmptyState from '../../src/components/common/EmptyState';
 import LoadingBox from '../../src/components/common/LoadingBox';
 import StatusMessage from '../../src/components/common/StatusMessage';
 import { useAuth } from '../../src/context/AuthContext';
+import { useTheme } from '../../src/context/ThemeContext';
 import { getStats } from '../../src/services/statsService';
-import colors from '../../src/styles/colors';
 import { formatDateTime } from '../../src/utils/formatDate';
 
 export default function DashboardScreen() {
   const { width } = useWindowDimensions();
   const { user, tenant } = useAuth();
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
   const [stats, setStats] = useState();
   const [range, setRange] = useState('24h');
   const [isLoading, setIsLoading] = useState(true);
@@ -112,8 +114,12 @@ export default function DashboardScreen() {
                   {alert.description || 'No description'}
                 </Text>
                 <View style={styles.badgeRow}>
-                  <Text style={styles.badge}>{alert.severity || 'low'}</Text>
-                  <Text style={styles.badge}>{alert.status || 'open'}</Text>
+                  <Text style={[styles.badge, styles[`severity_${alert.severity || 'low'}`]]}>
+                    {alert.severity || 'low'}
+                  </Text>
+                  <Text style={[styles.badge, alert.status === 'closed' ? styles.closed : styles.open]}>
+                    {alert.status || 'open'}
+                  </Text>
                 </View>
               </View>
             ))
@@ -127,6 +133,9 @@ export default function DashboardScreen() {
 }
 
 function InfoCard({ label, value }) {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
+
   return (
     <View style={styles.infoCard}>
       <Text style={styles.infoLabel}>{label}</Text>
@@ -136,6 +145,9 @@ function InfoCard({ label, value }) {
 }
 
 function StatCard({ label, value }) {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
+
   return (
     <View style={styles.statCard}>
       <Text style={styles.statLabel}>{label}</Text>
@@ -145,6 +157,9 @@ function StatCard({ label, value }) {
 }
 
 function ListCard({ title, items, labelKey, emptyTitle }) {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
+
   return (
     <View style={styles.card}>
       <Text style={styles.cardTitle}>{title}</Text>
@@ -162,10 +177,10 @@ function ListCard({ title, items, labelKey, emptyTitle }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme) => StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: theme.background,
   },
   container: {
     padding: 24,
@@ -174,10 +189,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '700',
-    color: colors.text,
+    color: theme.text,
   },
   subtitle: {
-    color: colors.muted,
+    color: theme.mutedText,
     fontSize: 16,
     marginTop: 4,
     marginBottom: 18,
@@ -191,19 +206,19 @@ const styles = StyleSheet.create({
   },
   infoCard: {
     flex: 1,
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: theme.border,
     padding: 16,
   },
   infoLabel: {
-    color: colors.muted,
+    color: theme.mutedText,
     fontSize: 13,
     marginBottom: 6,
   },
   infoValue: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 16,
     fontWeight: '700',
   },
@@ -216,21 +231,21 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: theme.border,
     borderRadius: 8,
     paddingVertical: 10,
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
   },
   rangeButtonActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
+    backgroundColor: theme.primary,
+    borderColor: theme.primary,
   },
   rangeText: {
-    color: colors.text,
+    color: theme.text,
     fontWeight: '700',
   },
   rangeTextActive: {
-    color: '#ffffff',
+    color: theme.headerText,
   },
   statsGrid: {
     gap: 12,
@@ -239,32 +254,32 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: theme.border,
     padding: 18,
   },
   statLabel: {
-    color: colors.muted,
+    color: theme.mutedText,
     fontSize: 14,
     marginBottom: 8,
   },
   statValue: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 30,
     fontWeight: '800',
   },
   card: {
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: theme.border,
     padding: 16,
     marginBottom: 16,
   },
   cardTitle: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 18,
     fontWeight: '800',
     marginBottom: 12,
@@ -274,23 +289,23 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     borderTopWidth: 1,
-    borderTopColor: '#e2e8f0',
+    borderTopColor: theme.border,
     paddingVertical: 10,
   },
   listLabel: {
     flex: 1,
-    color: colors.text,
+    color: theme.text,
     fontSize: 15,
     fontWeight: '600',
   },
   listCount: {
-    color: colors.primary,
+    color: theme.primary,
     fontSize: 16,
     fontWeight: '800',
   },
   alertItem: {
     borderTopWidth: 1,
-    borderTopColor: '#e2e8f0',
+    borderTopColor: theme.border,
     paddingVertical: 12,
   },
   alertHeader: {
@@ -298,16 +313,16 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   alertName: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 16,
     fontWeight: '700',
   },
   alertTime: {
-    color: colors.muted,
+    color: theme.mutedText,
     fontSize: 12,
   },
   alertDescription: {
-    color: colors.muted,
+    color: theme.mutedText,
     fontSize: 14,
     lineHeight: 20,
   },
@@ -318,12 +333,30 @@ const styles = StyleSheet.create({
   },
   badge: {
     overflow: 'hidden',
-    color: colors.text,
-    backgroundColor: '#e2e8f0',
+    color: theme.headerText,
+    backgroundColor: theme.primary,
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 4,
     fontSize: 12,
     fontWeight: '700',
+  },
+  severity_low: {
+    backgroundColor: theme.success,
+  },
+  severity_medium: {
+    backgroundColor: '#ca8a04',
+  },
+  severity_high: {
+    backgroundColor: '#ea580c',
+  },
+  severity_critical: {
+    backgroundColor: theme.danger,
+  },
+  open: {
+    backgroundColor: theme.primary,
+  },
+  closed: {
+    backgroundColor: theme.mutedText,
   },
 });

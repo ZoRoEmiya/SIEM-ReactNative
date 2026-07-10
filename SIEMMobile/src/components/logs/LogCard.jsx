@@ -1,8 +1,11 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import colors from '../../styles/colors';
+import { useTheme } from '../../context/ThemeContext';
 import { formatDateTime } from '../../utils/formatDate';
 
 export default function LogCard({ log, onPress }) {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
+
   return (
     <Pressable style={styles.card} onPress={onPress}>
       <View style={styles.header}>
@@ -24,11 +27,11 @@ export default function LogCard({ log, onPress }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme) => StyleSheet.create({
   card: {
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: theme.border,
     borderRadius: 8,
     padding: 14,
     marginBottom: 12,
@@ -45,32 +48,32 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 4,
-    color: '#ffffff',
-    backgroundColor: colors.primary,
+    color: theme.headerText,
+    backgroundColor: theme.primary,
     fontSize: 12,
     fontWeight: '800',
     textTransform: 'uppercase',
   },
   level_info: {
-    backgroundColor: colors.primary,
+    backgroundColor: theme.primary,
   },
   level_warn: {
     backgroundColor: '#ca8a04',
   },
   level_error: {
-    backgroundColor: colors.danger,
+    backgroundColor: theme.danger,
   },
   level_critical: {
     backgroundColor: '#7f1d1d',
   },
   time: {
     flex: 1,
-    color: colors.muted,
+    color: theme.mutedText,
     fontSize: 12,
     textAlign: 'right',
   },
   message: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 16,
     fontWeight: '700',
     lineHeight: 22,
@@ -83,7 +86,7 @@ const styles = StyleSheet.create({
   },
   meta: {
     flex: 1,
-    color: colors.muted,
+    color: theme.mutedText,
     fontSize: 13,
   },
 });

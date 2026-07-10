@@ -1,7 +1,10 @@
 import { StyleSheet, Text, TextInput, View } from 'react-native';
-import colors from '../../styles/colors';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function AppTextInput({ label, value, onChangeText, placeholder, secureTextEntry, keyboardType, editable = true }) {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
+
   return (
     <View style={styles.group}>
       <Text style={styles.label}>{label}</Text>
@@ -10,7 +13,7 @@ export default function AppTextInput({ label, value, onChangeText, placeholder, 
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor={colors.muted}
+        placeholderTextColor={theme.mutedText}
         secureTextEntry={secureTextEntry}
         keyboardType={keyboardType}
         autoCapitalize="none"
@@ -20,12 +23,12 @@ export default function AppTextInput({ label, value, onChangeText, placeholder, 
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme) => StyleSheet.create({
   group: {
     marginBottom: 16,
   },
   label: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 14,
     fontWeight: '700',
     marginBottom: 6,
@@ -33,14 +36,15 @@ const styles = StyleSheet.create({
   input: {
     minHeight: 48,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: theme.border,
     borderRadius: 8,
-    backgroundColor: colors.card,
-    color: colors.text,
+    backgroundColor: theme.inputBackground,
+    color: theme.text,
     fontSize: 16,
     paddingHorizontal: 14,
   },
   disabled: {
-    backgroundColor: '#e2e8f0',
+    backgroundColor: theme.surface,
+    color: theme.disabledText,
   },
 });

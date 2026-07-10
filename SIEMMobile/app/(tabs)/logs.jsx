@@ -7,8 +7,8 @@ import LoadingBox from '../../src/components/common/LoadingBox';
 import StatusMessage from '../../src/components/common/StatusMessage';
 import LogCard from '../../src/components/logs/LogCard';
 import LogFilters from '../../src/components/logs/LogFilters';
+import { useTheme } from '../../src/context/ThemeContext';
 import { getLogs } from '../../src/services/logsService';
-import colors from '../../src/styles/colors';
 import { formatDateTime } from '../../src/utils/formatDate';
 
 const LIMIT = 50;
@@ -24,6 +24,8 @@ const emptyFilters = {
 };
 
 export default function LogsScreen() {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
   const [logs, setLogs] = useState([]);
   const [filters, setFilters] = useState(emptyFilters);
   const [page, setPage] = useState({ limit: LIMIT, skip: 0, total: 0 });
@@ -133,7 +135,14 @@ export default function LogsScreen() {
             </View>
           ) : null
         }
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={[theme.primary]}
+            tintColor={theme.primary}
+          />
+        }
       />
 
       <Modal visible={Boolean(selectedLog)} animationType="slide" onRequestClose={() => setSelectedLog()}>
@@ -160,6 +169,9 @@ export default function LogsScreen() {
 }
 
 function DetailRow({ label, value }) {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
+
   return (
     <View style={styles.detailRow}>
       <Text style={styles.detailLabel}>{label}</Text>
@@ -168,10 +180,10 @@ function DetailRow({ label, value }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme) => StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: theme.background,
   },
   container: {
     padding: 24,
@@ -180,16 +192,16 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '700',
-    color: colors.text,
+    color: theme.text,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: colors.muted,
+    color: theme.mutedText,
     marginBottom: 16,
   },
   pageText: {
-    color: colors.muted,
+    color: theme.mutedText,
     fontSize: 14,
     marginBottom: 12,
   },
@@ -199,48 +211,48 @@ const styles = StyleSheet.create({
   },
   modalSafeArea: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: theme.background,
   },
   modalContainer: {
     padding: 24,
     paddingBottom: 40,
   },
   modalTitle: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 26,
     fontWeight: '800',
     marginBottom: 18,
   },
   detailRow: {
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: theme.border,
     borderRadius: 8,
     padding: 12,
     marginBottom: 10,
   },
   detailLabel: {
-    color: colors.muted,
+    color: theme.mutedText,
     fontSize: 13,
     marginBottom: 4,
   },
   detailValue: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 15,
     fontWeight: '700',
   },
   rawTitle: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 18,
     fontWeight: '800',
     marginTop: 10,
     marginBottom: 8,
   },
   rawText: {
-    color: colors.text,
-    backgroundColor: colors.card,
+    color: theme.text,
+    backgroundColor: theme.card,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: theme.border,
     borderRadius: 8,
     padding: 12,
     fontSize: 12,

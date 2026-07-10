@@ -8,12 +8,14 @@ import StatusMessage from '../../src/components/common/StatusMessage';
 import UserCard from '../../src/components/users/UserCard';
 import UserForm from '../../src/components/users/UserForm';
 import { useAuth } from '../../src/context/AuthContext';
+import { useTheme } from '../../src/context/ThemeContext';
 import { createUser, deleteUser, getUsers, updateUserRole } from '../../src/services/usersService';
-import colors from '../../src/styles/colors';
 import { isEmail, isPasswordLongEnough, isRequired } from '../../src/utils/validators';
 
 export default function UsersScreen() {
   const { user } = useAuth();
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
   const [users, setUsers] = useState([]);
   const [newEmail, setNewEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -207,7 +209,7 @@ export default function UsersScreen() {
             <Text style={styles.confirmTitle}>Delete User</Text>
             <Text style={styles.text}>Delete {deleteTarget?.email}? This action cannot be undone.</Text>
             <View style={styles.roleActions}>
-              <AppButton title="Delete" onPress={handleDeleteUser} loading={working} />
+              <AppButton title="Delete" onPress={handleDeleteUser} loading={working} variant="danger" />
               <AppButton title="Cancel" onPress={() => setDeleteTarget()} disabled={working} variant="secondary" />
             </View>
           </View>
@@ -217,10 +219,10 @@ export default function UsersScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme) => StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: theme.background,
   },
   container: {
     padding: 24,
@@ -229,24 +231,24 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: '700',
-    color: colors.text,
+    color: theme.text,
     marginBottom: 8,
   },
   text: {
     fontSize: 16,
-    color: colors.muted,
+    color: theme.mutedText,
     marginBottom: 16,
   },
   modalSafeArea: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: theme.background,
   },
   modalContainer: {
     padding: 24,
     paddingBottom: 40,
   },
   modalTitle: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 24,
     fontWeight: '800',
     marginBottom: 16,
@@ -254,16 +256,16 @@ const styles = StyleSheet.create({
   confirmOverlay: {
     flex: 1,
     justifyContent: 'center',
-    backgroundColor: 'rgba(15, 23, 42, 0.55)',
+    backgroundColor: theme.modalBackdrop,
     padding: 24,
   },
   confirmBox: {
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
     borderRadius: 8,
     padding: 18,
   },
   confirmTitle: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 20,
     fontWeight: '800',
     marginBottom: 8,

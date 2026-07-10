@@ -1,9 +1,12 @@
 import { StyleSheet, Text, View } from 'react-native';
 import AppButton from '../common/AppButton';
 import AppTextInput from '../common/AppTextInput';
-import colors from '../../styles/colors';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function LogFilters({ filters, onChange, onApply, onClear, loading }) {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
+
   const updateFilter = (name, value) => {
     onChange({
       ...filters,
@@ -42,17 +45,17 @@ export default function LogFilters({ filters, onChange, onApply, onClear, loadin
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme) => StyleSheet.create({
   container: {
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: theme.border,
     borderRadius: 8,
     padding: 14,
     marginBottom: 16,
   },
   title: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 18,
     fontWeight: '800',
     marginBottom: 12,
@@ -67,17 +70,17 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.border,
-    color: colors.text,
+    borderColor: theme.border,
+    color: theme.text,
     paddingHorizontal: 10,
     paddingVertical: 6,
     fontSize: 13,
     fontWeight: '700',
   },
   levelButtonActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-    color: '#ffffff',
+    backgroundColor: theme.primary,
+    borderColor: theme.primary,
+    color: theme.headerText,
   },
   actions: {
     gap: 10,

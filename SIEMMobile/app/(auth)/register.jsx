@@ -6,13 +6,15 @@ import AppButton from '../../src/components/common/AppButton';
 import AppTextInput from '../../src/components/common/AppTextInput';
 import StatusMessage from '../../src/components/common/StatusMessage';
 import { useAuth } from '../../src/context/AuthContext';
+import { useTheme } from '../../src/context/ThemeContext';
 import { registerUser } from '../../src/services/authService';
-import colors from '../../src/styles/colors';
 import { isPasswordLongEnough, isRequired } from '../../src/utils/validators';
 
 export default function RegisterScreen() {
   const router = useRouter();
   const { login, user } = useAuth();
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
   const [companyName, setCompanyName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -111,10 +113,10 @@ export default function RegisterScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme) => StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: theme.background,
   },
   keyboardView: {
     flex: 1,
@@ -125,14 +127,14 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   card: {
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
     borderRadius: 8,
     padding: 22,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: theme.border,
   },
   logo: {
-    color: colors.primary,
+    color: theme.primary,
     fontSize: 18,
     fontWeight: '800',
     textAlign: 'center',
@@ -141,13 +143,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '700',
-    color: colors.text,
+    color: theme.text,
     marginBottom: 8,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
-    color: colors.muted,
+    color: theme.mutedText,
     textAlign: 'center',
     marginBottom: 20,
   },
@@ -157,11 +159,11 @@ const styles = StyleSheet.create({
     marginTop: 18,
   },
   footerText: {
-    color: colors.muted,
+    color: theme.mutedText,
     fontSize: 14,
   },
   link: {
-    color: colors.primary,
+    color: theme.primary,
     fontSize: 15,
     fontWeight: '700',
   },

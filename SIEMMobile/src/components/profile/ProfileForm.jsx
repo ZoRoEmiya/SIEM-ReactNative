@@ -3,10 +3,12 @@ import { StyleSheet, Text, View } from 'react-native';
 import AppButton from '../common/AppButton';
 import AppTextInput from '../common/AppTextInput';
 import StatusMessage from '../common/StatusMessage';
-import colors from '../../styles/colors';
+import { useTheme } from '../../context/ThemeContext';
 import { isEmail, isPasswordLongEnough, isRequired } from '../../utils/validators';
 
 export default function ProfileForm({ user, onUpdate, disabled, onWorkingChange }) {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
   const [email, setEmail] = useState(user?.email || '');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -147,23 +149,23 @@ export default function ProfileForm({ user, onUpdate, disabled, onWorkingChange 
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme) => StyleSheet.create({
   card: {
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: theme.border,
     borderRadius: 8,
     padding: 16,
     marginBottom: 20,
   },
   title: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 20,
     fontWeight: '800',
     marginBottom: 6,
   },
   description: {
-    color: colors.muted,
+    color: theme.mutedText,
     fontSize: 14,
     lineHeight: 20,
     marginBottom: 16,
