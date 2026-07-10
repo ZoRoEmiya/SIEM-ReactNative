@@ -238,3 +238,51 @@ export const updateMe = async (req, res) => {
         });
     }
 };
+
+/**
+ * Delete current authenticated user account
+ * DELETE /api/auth/me (protected route)
+ */
+export const deleteMe = async (req, res) => {
+    try {
+        const { userId, tenantId } = req.user;
+
+        const user = await User.findOne({
+            _id: userId,
+            tenantId
+        });
+
+        if (!user) {
+            return res.status(404).json({
+                error: 'User not found'
+            });
+        }
+
+        if (user.role === 'admin') {
+            const adminCount = await User.countDocuments({
+                tenantId,
+                role: 'admin'
+            });
+
+            if (adminCount <= 1) {
+                return res.status(400).json({
+                    error: 'Cannot delete the last admin in your organization'
+                });
+            }
+        }
+
+        await User.deleteOne({
+            _id: userId,
+            tenantId
+        });
+
+        res.status(200).json({
+            message: 'Account deleted successfully'
+        });
+    } catch (error) {
+        console.error('Delete profile error:', error);
+        res.status(500).json({
+            error: 'Failed to delete user account.'
+        });
+    }
+};

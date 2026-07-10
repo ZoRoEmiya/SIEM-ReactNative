@@ -1,6 +1,6 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { register, login, me, updateMe } from '../controllers/authController.js';
+import { register, login, me, updateMe, deleteMe } from '../controllers/authController.js';
 import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -64,5 +64,7 @@ router.patch(
     ],
     updateMe
 );
+
+router.delete('/me', authenticate, deleteMe);
 
 export default router;
