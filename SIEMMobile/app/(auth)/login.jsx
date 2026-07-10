@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AppButton from '../../src/components/common/AppButton';
@@ -7,6 +7,7 @@ import AppTextInput from '../../src/components/common/AppTextInput';
 import StatusMessage from '../../src/components/common/StatusMessage';
 import { useAuth } from '../../src/context/AuthContext';
 import { useTheme } from '../../src/context/ThemeContext';
+import { useOrientation } from '../../src/hooks/useOrientation';
 import { loginUser } from '../../src/services/authService';
 import { isRequired } from '../../src/utils/validators';
 
@@ -14,6 +15,7 @@ export default function LoginScreen() {
   const router = useRouter();
   const { login, user } = useAuth();
   const { theme } = useTheme();
+  const { isLandscape } = useOrientation();
   const styles = createStyles(theme);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -58,8 +60,16 @@ export default function LoginScreen() {
         style={styles.keyboardView}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <View style={styles.container}>
-          <View style={styles.card}>
+        <ScrollView
+          contentContainerStyle={[
+            styles.container,
+            isLandscape
+              ? styles.containerLandscape
+              : styles.containerPortrait,
+          ]}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={[styles.card, isLandscape && styles.cardLandscape]}>
             <Text style={styles.logo}>SIEM Portal</Text>
             <Text style={styles.title}>Welcome Back</Text>
             <Text style={styles.subtitle}>Sign in to access your security dashboard</Text>
@@ -93,7 +103,7 @@ export default function LoginScreen() {
               </Pressable>
             </View>
           </View>
-        </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -108,9 +118,15 @@ const createStyles = (theme) => StyleSheet.create({
     flex: 1,
   },
   container: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: 'center',
+  },
+  containerPortrait: {
     padding: 24,
+  },
+  containerLandscape: {
+    paddingHorizontal: 32,
+    paddingVertical: 16,
   },
   card: {
     backgroundColor: theme.card,
@@ -118,6 +134,11 @@ const createStyles = (theme) => StyleSheet.create({
     padding: 22,
     borderWidth: 1,
     borderColor: theme.border,
+  },
+  cardLandscape: {
+    width: '100%',
+    maxWidth: 600,
+    alignSelf: 'center',
   },
   logo: {
     color: theme.primary,

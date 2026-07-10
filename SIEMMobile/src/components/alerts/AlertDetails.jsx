@@ -17,9 +17,10 @@ import { formatDateTime } from '../../utils/formatDate';
  * @param {boolean} props.updating - Whether alert status is updating
  * @param {string} props.message - Success message
  * @param {string} props.error - Error message
+ * @param {boolean} props.isLandscape - Whether the screen is in landscape orientation
  * @returns {JSX.Element|null} Alert details content
  */
-export default function AlertDetails({ alert, onClose, onToggleStatus, updating, message, error }) {
+export default function AlertDetails({ alert, onClose, onToggleStatus, updating, message, error, isLandscape }) {
   const { theme } = useTheme();
   const styles = createStyles(theme);
   const [rate, setRate] = useState(1);
@@ -124,22 +125,38 @@ export default function AlertDetails({ alert, onClose, onToggleStatus, updating,
   const nextStatusLabel = alert.status === 'open' ? 'Close Alert' : 'Reopen Alert';
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        isLandscape
+          ? styles.containerLandscape
+          : styles.containerPortrait,
+      ]}
+    >
       <Text style={styles.title}>{alert.ruleName || 'Security Alert'}</Text>
       <StatusMessage message={message} type="success" />
       <StatusMessage message={error} />
       <StatusMessage message={speechError} />
 
-      <DetailRow label="Time" value={formatDateTime(alert.ts)} />
-      <DetailRow label="Severity" value={alert.severity} />
-      <DetailRow label="Status" value={alert.status} />
-      <DetailRow label="Description" value={alert.description} />
+      <View style={isLandscape ? styles.detailsLandscape : styles.detailsPortrait}>
+        <DetailRow label="Time" value={formatDateTime(alert.ts)} style={isLandscape ? styles.detailLandscape : styles.detailPortrait} />
+        <DetailRow label="Severity" value={alert.severity} style={isLandscape ? styles.detailLandscape : styles.detailPortrait} />
+        <DetailRow label="Status" value={alert.status} style={isLandscape ? styles.detailLandscape : styles.detailPortrait} />
+        <DetailRow label="Description" value={alert.description} style={isLandscape ? styles.detailLandscape : styles.detailPortrait} />
+      </View>
 
       <Text style={styles.sectionTitle}>Entities</Text>
       {alert.entities && Object.keys(alert.entities).length ? (
-        Object.entries(alert.entities).map(([key, value]) => (
-          <DetailRow key={key} label={key} value={String(value)} />
-        ))
+        <View style={isLandscape ? styles.detailsLandscape : styles.detailsPortrait}>
+          {Object.entries(alert.entities).map(([key, value]) => (
+            <DetailRow
+              key={key}
+              label={key}
+              value={String(value)}
+              style={isLandscape ? styles.detailLandscape : styles.detailPortrait}
+            />
+          ))}
+        </View>
       ) : (
         <Text style={styles.emptyText}>No entities associated with this alert.</Text>
       )}
@@ -176,21 +193,33 @@ export default function AlertDetails({ alert, onClose, onToggleStatus, updating,
           thumbTintColor={theme.primary}
         />
 
-        <View style={styles.speechActions}>
-          <AppButton title="Read Alert" onPress={handleReadAlert} disabled={isSpeaking} />
-          <AppButton title="Stop Reading" onPress={handleStopSpeech} disabled={!isSpeaking} variant="secondary" />
+        <View style={[styles.speechActions, isLandscape ? styles.actionsLandscape : styles.actionsPortrait]}>
+          <View style={isLandscape ? styles.actionLandscape : styles.actionPortrait}>
+            <AppButton title="Read Alert" onPress={handleReadAlert} disabled={isSpeaking} />
+          </View>
+          <View style={isLandscape ? styles.actionLandscape : styles.actionPortrait}>
+            <AppButton title="Stop Reading" onPress={handleStopSpeech} disabled={!isSpeaking} variant="secondary" />
+          </View>
           {Platform.OS === 'ios' ? (
             <>
-              <AppButton title="Pause" onPress={handlePauseSpeech} disabled={!isSpeaking || isPaused} variant="secondary" />
-              <AppButton title="Resume" onPress={handleResumeSpeech} disabled={!isSpeaking || !isPaused} variant="secondary" />
+              <View style={isLandscape ? styles.actionLandscape : styles.actionPortrait}>
+                <AppButton title="Pause" onPress={handlePauseSpeech} disabled={!isSpeaking || isPaused} variant="secondary" />
+              </View>
+              <View style={isLandscape ? styles.actionLandscape : styles.actionPortrait}>
+                <AppButton title="Resume" onPress={handleResumeSpeech} disabled={!isSpeaking || !isPaused} variant="secondary" />
+              </View>
             </>
           ) : null}
         </View>
       </View>
 
-      <View style={styles.actions}>
-        <AppButton title={nextStatusLabel} onPress={onToggleStatus} loading={updating} />
-        <AppButton title="Close" onPress={handleCloseDetails} disabled={updating} variant="secondary" />
+      <View style={[styles.actions, isLandscape ? styles.actionsLandscape : styles.actionsPortrait]}>
+        <View style={isLandscape ? styles.actionLandscape : styles.actionPortrait}>
+          <AppButton title={nextStatusLabel} onPress={onToggleStatus} loading={updating} />
+        </View>
+        <View style={isLandscape ? styles.actionLandscape : styles.actionPortrait}>
+          <AppButton title="Close" onPress={handleCloseDetails} disabled={updating} variant="secondary" />
+        </View>
       </View>
     </View>
   );
@@ -201,14 +230,15 @@ export default function AlertDetails({ alert, onClose, onToggleStatus, updating,
  * @param {object} props - Component properties
  * @param {string} props.label - Detail label
  * @param {string} props.value - Detail value
+ * @param {object} props.style - Additional detail row style
  * @returns {JSX.Element} Alert detail row
  */
-function DetailRow({ label, value }) {
+function DetailRow({ label, value, style }) {
   const { theme } = useTheme();
   const styles = createStyles(theme);
 
   return (
-    <View style={styles.row}>
+    <View style={[styles.row, style]}>
       <Text style={styles.label}>{label}</Text>
       <Text style={styles.value}>{value || 'N/A'}</Text>
     </View>
@@ -217,8 +247,15 @@ function DetailRow({ label, value }) {
 
 const createStyles = (theme) => StyleSheet.create({
   container: {
-    padding: 24,
     paddingBottom: 40,
+  },
+  containerPortrait: {
+    paddingHorizontal: 24,
+    paddingTop: 24,
+  },
+  containerLandscape: {
+    paddingHorizontal: 32,
+    paddingTop: 20,
   },
   title: {
     color: theme.text,
@@ -232,6 +269,22 @@ const createStyles = (theme) => StyleSheet.create({
     borderColor: theme.border,
     borderRadius: 8,
     padding: 12,
+  },
+  detailsPortrait: {
+    flexDirection: 'column',
+  },
+  detailsLandscape: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  detailPortrait: {
+    width: '100%',
+    marginBottom: 10,
+  },
+  detailLandscape: {
+    flexBasis: '48%',
+    flexGrow: 1,
     marginBottom: 10,
   },
   label: {
@@ -288,5 +341,19 @@ const createStyles = (theme) => StyleSheet.create({
   actions: {
     gap: 10,
     marginTop: 8,
+  },
+  actionsPortrait: {
+    flexDirection: 'column',
+  },
+  actionsLandscape: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  actionPortrait: {
+    width: '100%',
+  },
+  actionLandscape: {
+    flexBasis: '48%',
+    flexGrow: 1,
   },
 });

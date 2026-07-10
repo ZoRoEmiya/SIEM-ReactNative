@@ -6,11 +6,13 @@ import DeleteAccountSection from '../../src/components/profile/DeleteAccountSect
 import ProfileForm from '../../src/components/profile/ProfileForm';
 import { useAuth } from '../../src/context/AuthContext';
 import { useTheme } from '../../src/context/ThemeContext';
+import { useOrientation } from '../../src/hooks/useOrientation';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { user, tenant, updateProfile, deleteAccount } = useAuth();
   const { theme } = useTheme();
+  const { isLandscape } = useOrientation();
   const styles = createStyles(theme);
   const [requestActive, setRequestActive] = useState(false);
 
@@ -26,7 +28,12 @@ export default function ProfileScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <ScrollView
-          contentContainerStyle={styles.container}
+          contentContainerStyle={[
+            styles.container,
+            isLandscape
+              ? styles.containerLandscape
+              : styles.containerPortrait,
+          ]}
           keyboardShouldPersistTaps="handled"
         >
           <Text style={styles.title}>Profile</Text>
@@ -77,8 +84,18 @@ const createStyles = (theme) => StyleSheet.create({
     flex: 1,
   },
   container: {
-    padding: 24,
+    width: '100%',
+    alignSelf: 'center',
     paddingBottom: 40,
+  },
+  containerPortrait: {
+    paddingHorizontal: 24,
+    paddingTop: 24,
+  },
+  containerLandscape: {
+    maxWidth: 800,
+    paddingHorizontal: 32,
+    paddingTop: 20,
   },
   title: {
     color: theme.text,
