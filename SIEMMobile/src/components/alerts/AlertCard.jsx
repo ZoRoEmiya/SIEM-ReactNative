@@ -1,28 +1,32 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
+import i18n from '../../localization/i18n';
+import { getAlertSeverityLabel, getAlertStatusLabel } from '../../localization/labels';
 import { formatDateTime } from '../../utils/formatDate';
 
 export default function AlertCard({ alert, onPress }) {
   const { theme } = useTheme();
+  const { isHebrew } = useLanguage();
   const styles = createStyles(theme);
 
   return (
     <Pressable style={styles.card} onPress={onPress}>
       <View style={styles.header}>
         <Text style={styles.ruleName} numberOfLines={1}>
-          {alert.ruleName || 'Security Alert'}
+          {alert.ruleName || i18n.t('dashboardSecurityAlertFallback')}
         </Text>
         <Text style={styles.time}>{formatDateTime(alert.ts)}</Text>
       </View>
 
       <Text style={styles.description} numberOfLines={2}>
-        {alert.description || 'No description'}
+        {alert.description || i18n.t('dashboardNoDescription')}
       </Text>
 
-      <View style={styles.badgeRow}>
-        <Text style={[styles.badge, styles[`severity_${alert.severity || 'low'}`]]}>{alert.severity || 'low'}</Text>
+      <View style={[styles.badgeRow, isHebrew && styles.rowRtl]}>
+        <Text style={[styles.badge, styles[`severity_${alert.severity || 'low'}`]]}>{getAlertSeverityLabel(alert.severity || 'low')}</Text>
         <Text style={[styles.badge, alert.status === 'closed' ? styles.closed : styles.open]}>
-          {alert.status || 'open'}
+          {getAlertStatusLabel(alert.status || 'open')}
         </Text>
       </View>
     </Pressable>
@@ -61,6 +65,9 @@ const createStyles = (theme) => StyleSheet.create({
     flexWrap: 'wrap',
     gap: 8,
     marginTop: 12,
+  },
+  rowRtl: {
+    flexDirection: 'row-reverse',
   },
   badge: {
     overflow: 'hidden',

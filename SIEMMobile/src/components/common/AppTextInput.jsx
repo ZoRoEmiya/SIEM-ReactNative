@@ -1,15 +1,17 @@
 import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 
-export default function AppTextInput({ label, value, onChangeText, placeholder, secureTextEntry, keyboardType, editable = true }) {
+export default function AppTextInput({ label, value, onChangeText, placeholder, secureTextEntry, keyboardType, editable = true, forceLtr = false }) {
   const { theme } = useTheme();
+  const { isHebrew } = useLanguage();
   const styles = createStyles(theme);
 
   return (
     <View style={styles.group}>
-      <Text style={styles.label}>{label}</Text>
+      <Text style={[styles.label, isHebrew && styles.rtlText]}>{label}</Text>
       <TextInput
-        style={[styles.input, !editable && styles.disabled]}
+        style={[styles.input, isHebrew && !forceLtr ? styles.rtlText : styles.ltrText, !editable && styles.disabled]}
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
@@ -46,5 +48,13 @@ const createStyles = (theme) => StyleSheet.create({
   disabled: {
     backgroundColor: theme.surface,
     color: theme.disabledText,
+  },
+  rtlText: {
+    textAlign: 'right',
+    writingDirection: 'rtl',
+  },
+  ltrText: {
+    textAlign: 'left',
+    writingDirection: 'ltr',
   },
 });

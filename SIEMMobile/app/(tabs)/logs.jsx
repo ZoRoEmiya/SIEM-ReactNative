@@ -7,8 +7,11 @@ import LoadingBox from '../../src/components/common/LoadingBox';
 import StatusMessage from '../../src/components/common/StatusMessage';
 import LogCard from '../../src/components/logs/LogCard';
 import LogFilters from '../../src/components/logs/LogFilters';
+import { useLanguage } from '../../src/context/LanguageContext';
 import { useTheme } from '../../src/context/ThemeContext';
 import { useOrientation } from '../../src/hooks/useOrientation';
+import i18n from '../../src/localization/i18n';
+import { getLogLevelLabel } from '../../src/localization/labels';
 import { getLogs } from '../../src/services/logsService';
 import { formatDateTime } from '../../src/utils/formatDate';
 
@@ -26,6 +29,7 @@ const emptyFilters = {
 
 export default function LogsScreen() {
   const { theme } = useTheme();
+  const { isHebrew } = useLanguage();
   const { isLandscape, width, height } = useOrientation();
   const styles = createStyles(theme);
   const [logs, setLogs] = useState([]);
@@ -47,7 +51,7 @@ export default function LogsScreen() {
 
     try {
       if (nextFilters.from && nextFilters.to && new Date(nextFilters.from) > new Date(nextFilters.to)) {
-        setError('"From" date must be before "To" date');
+        setError(i18n.t('logsInvalidDateRange'));
         return;
       }
 
@@ -60,7 +64,7 @@ export default function LogsScreen() {
       setLogs(data.items || []);
       setPage(data.page || { limit: LIMIT, skip, total: 0 });
     } catch (err) {
-      setError(err.error || 'Failed to load logs');
+      setError(err.error || i18n.t('logsFailedToLoad'));
     } finally {
       setIsLoading(false);
       setRefreshing(false);
@@ -98,7 +102,7 @@ export default function LogsScreen() {
   }, []);
 
   if (isLoading && !logs.length) {
-    return <LoadingBox message="Loading security logs..." />;
+    return <LoadingBox message={i18n.t('logsLoading')} />;
   }
 
   const totalPages = Math.max(Math.ceil(page.total / page.limit), 1);
@@ -122,8 +126,8 @@ export default function LogsScreen() {
         ]}
         ListHeaderComponent={
           <View>
-            <Text style={styles.title}>Security Logs</Text>
-            <Text style={styles.subtitle}>Monitor and analyze security events.</Text>
+            <Text style={[styles.title, isHebrew && styles.rtlText]}>{i18n.t('logsTitle')}</Text>
+            <Text style={[styles.subtitle, isHebrew && styles.rtlText]}>{i18n.t('logsSubtitle')}</Text>
             <StatusMessage message={error} />
             <LogFilters
               filters={filters}
@@ -133,17 +137,17 @@ export default function LogsScreen() {
               loading={isLoading}
               isLandscape={isLandscape}
             />
-            <Text style={styles.pageText}>
-              Page {currentPage} of {totalPages} · {page.total} logs
+            <Text style={[styles.pageText, isHebrew && styles.rtlText]}>
+              {i18n.t('logsPageSummary', { current: currentPage, total: totalPages, count: page.total })}
             </Text>
           </View>
         }
-        ListEmptyComponent={<EmptyState title="No logs found" message="Try changing the filters or pull to refresh." />}
+        ListEmptyComponent={<EmptyState title={i18n.t('logsEmptyTitle')} message={i18n.t('logsEmptyMessage')} />}
         ListFooterComponent={
           logs.length ? (
             <View style={styles.pagination}>
-              <AppButton title="Previous" onPress={handlePrevPage} disabled={page.skip === 0 || isLoading} variant="secondary" />
-              <AppButton title="Next" onPress={handleNextPage} disabled={page.skip + page.limit >= page.total || isLoading} variant="secondary" />
+              <AppButton title={i18n.t('commonPrevious')} onPress={handlePrevPage} disabled={page.skip === 0 || isLoading} variant="secondary" />
+              <AppButton title={i18n.t('commonNext')} onPress={handleNextPage} disabled={page.skip + page.limit >= page.total || isLoading} variant="secondary" />
             </View>
           ) : null
         }
@@ -168,21 +172,21 @@ export default function LogsScreen() {
               modalDimensions,
             ]}
           >
-            <Text style={styles.modalTitle}>Log Details</Text>
-            <View style={isLandscape ? styles.detailsLandscape : styles.detailsPortrait}>
-              <DetailRow label="Time" value={formatDateTime(selectedLog?.ts)} style={isLandscape ? styles.detailRowLandscape : styles.detailRowPortrait} />
-              <DetailRow label="Level" value={selectedLog?.level} style={isLandscape ? styles.detailRowLandscape : styles.detailRowPortrait} />
-              <DetailRow label="Event Type" value={selectedLog?.eventType} style={isLandscape ? styles.detailRowLandscape : styles.detailRowPortrait} />
-              <DetailRow label="Source" value={selectedLog?.source} style={isLandscape ? styles.detailRowLandscape : styles.detailRowPortrait} />
-              <DetailRow label="IP" value={selectedLog?.ip || 'N/A'} style={isLandscape ? styles.detailRowLandscape : styles.detailRowPortrait} />
-              <DetailRow label="User" value={selectedLog?.user || 'N/A'} style={isLandscape ? styles.detailRowLandscape : styles.detailRowPortrait} />
-              <DetailRow label="Message" value={selectedLog?.message} style={isLandscape ? styles.detailRowLandscape : styles.detailRowPortrait} />
+            <Text style={[styles.modalTitle, isHebrew && styles.rtlText]}>{i18n.t('logsDetailsTitle')}</Text>
+            <View style={[isLandscape ? styles.detailsLandscape : styles.detailsPortrait, isLandscape && isHebrew && styles.rowRtl]}>
+              <DetailRow label={i18n.t('logsTime')} value={formatDateTime(selectedLog?.ts)} style={isLandscape ? styles.detailRowLandscape : styles.detailRowPortrait} />
+              <DetailRow label={i18n.t('logsLevel')} value={getLogLevelLabel(selectedLog?.level)} technical={false} style={isLandscape ? styles.detailRowLandscape : styles.detailRowPortrait} />
+              <DetailRow label={i18n.t('logsEventType')} value={selectedLog?.eventType} style={isLandscape ? styles.detailRowLandscape : styles.detailRowPortrait} />
+              <DetailRow label={i18n.t('logsSource')} value={selectedLog?.source} style={isLandscape ? styles.detailRowLandscape : styles.detailRowPortrait} />
+              <DetailRow label={i18n.t('logsIp')} value={selectedLog?.ip || i18n.t('commonNotAvailable')} style={isLandscape ? styles.detailRowLandscape : styles.detailRowPortrait} />
+              <DetailRow label={i18n.t('logsUser')} value={selectedLog?.user || i18n.t('commonNotAvailable')} style={isLandscape ? styles.detailRowLandscape : styles.detailRowPortrait} />
+              <DetailRow label={i18n.t('logsMessage')} value={selectedLog?.message} style={isLandscape ? styles.detailRowLandscape : styles.detailRowPortrait} />
             </View>
 
-            <Text style={styles.rawTitle}>Raw Data</Text>
+            <Text style={[styles.rawTitle, isHebrew && styles.rtlText]}>{i18n.t('logsRawData')}</Text>
             <Text style={styles.rawText}>{JSON.stringify(selectedLog?.raw || selectedLog, null, 2)}</Text>
 
-            <AppButton title="Close" onPress={() => setSelectedLog()} />
+            <AppButton title={i18n.t('commonClose')} onPress={() => setSelectedLog()} />
           </ScrollView>
         </SafeAreaView>
       </Modal>
@@ -190,14 +194,15 @@ export default function LogsScreen() {
   );
 }
 
-function DetailRow({ label, value, style }) {
+function DetailRow({ label, value, technical = true, style }) {
   const { theme } = useTheme();
+  const { isHebrew } = useLanguage();
   const styles = createStyles(theme);
 
   return (
     <View style={[styles.detailRow, style]}>
-      <Text style={styles.detailLabel}>{label}</Text>
-      <Text style={styles.detailValue}>{value || 'N/A'}</Text>
+      <Text style={[styles.detailLabel, isHebrew && styles.rtlText]}>{label}</Text>
+      <Text style={[styles.detailValue, technical && value ? styles.technicalText : isHebrew && styles.rtlText]}>{value || i18n.t('commonNotAvailable')}</Text>
     </View>
   );
 }
@@ -278,6 +283,9 @@ const createStyles = (theme) => StyleSheet.create({
     flexWrap: 'wrap',
     gap: 10,
   },
+  rowRtl: {
+    flexDirection: 'row-reverse',
+  },
   detailRowPortrait: {
     width: '100%',
     marginBottom: 10,
@@ -312,5 +320,14 @@ const createStyles = (theme) => StyleSheet.create({
     padding: 12,
     fontSize: 12,
     marginBottom: 16,
+    writingDirection: 'ltr',
+  },
+  rtlText: {
+    textAlign: 'right',
+    writingDirection: 'rtl',
+  },
+  technicalText: {
+    textAlign: 'left',
+    writingDirection: 'ltr',
   },
 });

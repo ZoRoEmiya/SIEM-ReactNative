@@ -1,4 +1,5 @@
 import api, { cleanParams, getApiError } from './api';
+import i18n from '../localization/i18n';
 
 export const getLogs = async (filters = {}) => {
   try {
@@ -8,7 +9,7 @@ export const getLogs = async (filters = {}) => {
 
     return response.data;
   } catch (error) {
-    throw getApiError(error, 'Failed to fetch logs');
+    throw getApiError(error, i18n.t('logsFailedToLoad'));
   }
 };
 
@@ -27,6 +28,6 @@ export const getLogsByIds = async (ids = []) => {
 
     return response.data.items || [];
   } catch (error) {
-    throw getApiError(error, 'Failed to fetch logs by IDs');
+    throw getApiError(error, i18n.t('logsFailedByIds'));
   }
 };

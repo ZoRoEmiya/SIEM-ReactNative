@@ -5,12 +5,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import DeleteAccountSection from '../../src/components/profile/DeleteAccountSection';
 import ProfileForm from '../../src/components/profile/ProfileForm';
 import { useAuth } from '../../src/context/AuthContext';
+import { useLanguage } from '../../src/context/LanguageContext';
 import { useTheme } from '../../src/context/ThemeContext';
 import { useOrientation } from '../../src/hooks/useOrientation';
+import i18n from '../../src/localization/i18n';
+import { getUserRoleLabel } from '../../src/localization/labels';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { user, tenant, updateProfile, deleteAccount } = useAuth();
+  const { isHebrew } = useLanguage();
   const { theme } = useTheme();
   const { isLandscape } = useOrientation();
   const styles = createStyles(theme);
@@ -36,14 +40,14 @@ export default function ProfileScreen() {
           ]}
           keyboardShouldPersistTaps="handled"
         >
-          <Text style={styles.title}>Profile</Text>
-          <Text style={styles.subtitle}>View and manage your account information.</Text>
+          <Text style={[styles.title, isHebrew && styles.rtlText]}>{i18n.t('profileTitle')}</Text>
+          <Text style={[styles.subtitle, isHebrew && styles.rtlText]}>{i18n.t('profileSubtitle')}</Text>
 
           <View style={styles.detailsCard}>
-            <Text style={styles.sectionTitle}>Account Details</Text>
-            <DetailRow label="Email" value={user?.email} />
-            <DetailRow label="Role" value={user?.role} />
-            <DetailRow label="Organization" value={tenant?.name} />
+            <Text style={[styles.sectionTitle, isHebrew && styles.rtlText]}>{i18n.t('profileAccountDetails')}</Text>
+            <DetailRow label={i18n.t('commonEmail')} value={user?.email} technical />
+            <DetailRow label={i18n.t('commonRole')} value={user?.role ? getUserRoleLabel(user.role) : undefined} translated />
+            <DetailRow label={i18n.t('commonOrganization')} value={tenant?.name} />
           </View>
 
           <ProfileForm
@@ -63,14 +67,21 @@ export default function ProfileScreen() {
   );
 }
 
-function DetailRow({ label, value }) {
+function DetailRow({ label, value, technical = false, translated = false }) {
   const { theme } = useTheme();
+  const { isHebrew } = useLanguage();
   const styles = createStyles(theme);
 
   return (
     <View style={styles.detailRow}>
-      <Text style={styles.detailLabel}>{label}</Text>
-      <Text style={styles.detailValue}>{value || 'N/A'}</Text>
+      <Text style={[styles.detailLabel, isHebrew && styles.rtlText]}>{label}</Text>
+      <Text style={[
+        styles.detailValue,
+        technical && value && styles.technicalText,
+        isHebrew && (translated || !value) && styles.rtlText,
+      ]}>
+        {value || i18n.t('commonNotAvailable')}
+      </Text>
     </View>
   );
 }
@@ -136,5 +147,13 @@ const createStyles = (theme) => StyleSheet.create({
     color: theme.text,
     fontSize: 16,
     fontWeight: '700',
+  },
+  rtlText: {
+    textAlign: 'right',
+    writingDirection: 'rtl',
+  },
+  technicalText: {
+    textAlign: 'left',
+    writingDirection: 'ltr',
   },
 });

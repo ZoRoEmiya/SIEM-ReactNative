@@ -1,11 +1,12 @@
 import api, { getApiError } from './api';
+import i18n from '../localization/i18n';
 
 export const getUsers = async () => {
   try {
     const response = await api.get('/users');
     return response.data;
   } catch (error) {
-    throw getApiError(error, 'Failed to fetch users');
+    throw getApiError(error, i18n.t('usersFailedToLoad'));
   }
 };
 
@@ -19,7 +20,7 @@ export const createUser = async (email, password, role) => {
 
     return response.data;
   } catch (error) {
-    throw getApiError(error, 'Failed to create user');
+    throw getApiError(error, i18n.t('usersFailedToCreate'));
   }
 };
 
@@ -28,7 +29,7 @@ export const updateUserRole = async (userId, role) => {
     const response = await api.patch(`/users/${userId}/role`, { role });
     return response.data;
   } catch (error) {
-    throw getApiError(error, 'Failed to update user role');
+    throw getApiError(error, i18n.t('usersFailedToUpdateRole'));
   }
 };
 
@@ -37,6 +38,6 @@ export const deleteUser = async (userId) => {
     const response = await api.delete(`/users/${userId}`);
     return response.data;
   } catch (error) {
-    throw getApiError(error, 'Failed to delete user');
+    throw getApiError(error, i18n.t('usersFailedToDelete'));
   }
 };

@@ -29,7 +29,8 @@
         {
           "initialOrientation": "DEFAULT"
         }
-      ]
+      ],
+      "expo-localization"
     ]
   }
 }

@@ -4,7 +4,10 @@ import Slider from '@react-native-community/slider';
 import * as Speech from 'expo-speech';
 import AppButton from '../common/AppButton';
 import StatusMessage from '../common/StatusMessage';
+import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
+import i18n from '../../localization/i18n';
+import { getAlertSeverityLabel, getAlertStatusLabel } from '../../localization/labels';
 import { buildAlertSpeechText } from '../../utils/buildAlertSpeechText';
 import { formatDateTime } from '../../utils/formatDate';
 
@@ -22,6 +25,7 @@ import { formatDateTime } from '../../utils/formatDate';
  */
 export default function AlertDetails({ alert, onClose, onToggleStatus, updating, message, error, isLandscape }) {
   const { theme } = useTheme();
+  const { isHebrew } = useLanguage();
   const styles = createStyles(theme);
   const [rate, setRate] = useState(1);
   const [pitch, setPitch] = useState(1);
@@ -77,7 +81,7 @@ export default function AlertDetails({ alert, onClose, onToggleStatus, updating,
     } catch (err) {
       setIsSpeaking(false);
       setIsPaused(false);
-      setSpeechError('Failed to read alert aloud');
+      setSpeechError(i18n.t('alertSpeechFailed'));
     }
   };
 
@@ -122,7 +126,7 @@ export default function AlertDetails({ alert, onClose, onToggleStatus, updating,
     return null;
   }
 
-  const nextStatusLabel = alert.status === 'open' ? 'Close Alert' : 'Reopen Alert';
+  const nextStatusLabel = alert.status === 'open' ? i18n.t('alertCloseAction') : i18n.t('alertReopenAction');
 
   return (
     <View
@@ -133,21 +137,21 @@ export default function AlertDetails({ alert, onClose, onToggleStatus, updating,
           : styles.containerPortrait,
       ]}
     >
-      <Text style={styles.title}>{alert.ruleName || 'Security Alert'}</Text>
+      <Text style={[styles.title, isHebrew && !alert.ruleName && styles.rtlText]}>{alert.ruleName || i18n.t('dashboardSecurityAlertFallback')}</Text>
       <StatusMessage message={message} type="success" />
       <StatusMessage message={error} />
       <StatusMessage message={speechError} />
 
-      <View style={isLandscape ? styles.detailsLandscape : styles.detailsPortrait}>
-        <DetailRow label="Time" value={formatDateTime(alert.ts)} style={isLandscape ? styles.detailLandscape : styles.detailPortrait} />
-        <DetailRow label="Severity" value={alert.severity} style={isLandscape ? styles.detailLandscape : styles.detailPortrait} />
-        <DetailRow label="Status" value={alert.status} style={isLandscape ? styles.detailLandscape : styles.detailPortrait} />
-        <DetailRow label="Description" value={alert.description} style={isLandscape ? styles.detailLandscape : styles.detailPortrait} />
+      <View style={[isLandscape ? styles.detailsLandscape : styles.detailsPortrait, isLandscape && isHebrew && styles.rowRtl]}>
+        <DetailRow label={i18n.t('logsTime')} value={formatDateTime(alert.ts)} style={isLandscape ? styles.detailLandscape : styles.detailPortrait} />
+        <DetailRow label={i18n.t('alertFilterSeverity')} value={getAlertSeverityLabel(alert.severity)} translated style={isLandscape ? styles.detailLandscape : styles.detailPortrait} />
+        <DetailRow label={i18n.t('alertFilterStatus')} value={getAlertStatusLabel(alert.status)} translated style={isLandscape ? styles.detailLandscape : styles.detailPortrait} />
+        <DetailRow label={i18n.t('alertDescription')} value={alert.description} style={isLandscape ? styles.detailLandscape : styles.detailPortrait} />
       </View>
 
-      <Text style={styles.sectionTitle}>Entities</Text>
+      <Text style={[styles.sectionTitle, isHebrew && styles.rtlText]}>{i18n.t('alertEntities')}</Text>
       {alert.entities && Object.keys(alert.entities).length ? (
-        <View style={isLandscape ? styles.detailsLandscape : styles.detailsPortrait}>
+        <View style={[isLandscape ? styles.detailsLandscape : styles.detailsPortrait, isLandscape && isHebrew && styles.rowRtl]}>
           {Object.entries(alert.entities).map(([key, value]) => (
             <DetailRow
               key={key}
@@ -158,13 +162,13 @@ export default function AlertDetails({ alert, onClose, onToggleStatus, updating,
           ))}
         </View>
       ) : (
-        <Text style={styles.emptyText}>No entities associated with this alert.</Text>
+        <Text style={[styles.emptyText, isHebrew && styles.rtlText]}>{i18n.t('alertNoEntities')}</Text>
       )}
 
-      <Text style={styles.sectionTitle}>Read Alert</Text>
+      <Text style={[styles.sectionTitle, isHebrew && styles.rtlText]}>{i18n.t('alertReadSection')}</Text>
       <View style={styles.speechBox}>
-        <View style={styles.sliderHeader}>
-          <Text style={styles.sliderLabel}>Speech Rate</Text>
+        <View style={[styles.sliderHeader, isHebrew && styles.rowRtl]}>
+          <Text style={[styles.sliderLabel, isHebrew && styles.rtlText]}>{i18n.t('alertSpeechRate')}</Text>
           <Text style={styles.sliderValue}>{rate.toFixed(1)}</Text>
         </View>
         <Slider
@@ -178,8 +182,8 @@ export default function AlertDetails({ alert, onClose, onToggleStatus, updating,
           thumbTintColor={theme.primary}
         />
 
-        <View style={styles.sliderHeader}>
-          <Text style={styles.sliderLabel}>Speech Pitch</Text>
+        <View style={[styles.sliderHeader, isHebrew && styles.rowRtl]}>
+          <Text style={[styles.sliderLabel, isHebrew && styles.rtlText]}>{i18n.t('alertSpeechPitch')}</Text>
           <Text style={styles.sliderValue}>{pitch.toFixed(1)}</Text>
         </View>
         <Slider
@@ -193,32 +197,32 @@ export default function AlertDetails({ alert, onClose, onToggleStatus, updating,
           thumbTintColor={theme.primary}
         />
 
-        <View style={[styles.speechActions, isLandscape ? styles.actionsLandscape : styles.actionsPortrait]}>
+        <View style={[styles.speechActions, isLandscape ? styles.actionsLandscape : styles.actionsPortrait, isLandscape && isHebrew && styles.rowRtl]}>
           <View style={isLandscape ? styles.actionLandscape : styles.actionPortrait}>
-            <AppButton title="Read Alert" onPress={handleReadAlert} disabled={isSpeaking} />
+            <AppButton title={i18n.t('alertReadAction')} onPress={handleReadAlert} disabled={isSpeaking} />
           </View>
           <View style={isLandscape ? styles.actionLandscape : styles.actionPortrait}>
-            <AppButton title="Stop Reading" onPress={handleStopSpeech} disabled={!isSpeaking} variant="secondary" />
+            <AppButton title={i18n.t('alertStopReading')} onPress={handleStopSpeech} disabled={!isSpeaking} variant="secondary" />
           </View>
           {Platform.OS === 'ios' ? (
             <>
               <View style={isLandscape ? styles.actionLandscape : styles.actionPortrait}>
-                <AppButton title="Pause" onPress={handlePauseSpeech} disabled={!isSpeaking || isPaused} variant="secondary" />
+                <AppButton title={i18n.t('alertPauseSpeech')} onPress={handlePauseSpeech} disabled={!isSpeaking || isPaused} variant="secondary" />
               </View>
               <View style={isLandscape ? styles.actionLandscape : styles.actionPortrait}>
-                <AppButton title="Resume" onPress={handleResumeSpeech} disabled={!isSpeaking || !isPaused} variant="secondary" />
+                <AppButton title={i18n.t('alertResumeSpeech')} onPress={handleResumeSpeech} disabled={!isSpeaking || !isPaused} variant="secondary" />
               </View>
             </>
           ) : null}
         </View>
       </View>
 
-      <View style={[styles.actions, isLandscape ? styles.actionsLandscape : styles.actionsPortrait]}>
+      <View style={[styles.actions, isLandscape ? styles.actionsLandscape : styles.actionsPortrait, isLandscape && isHebrew && styles.rowRtl]}>
         <View style={isLandscape ? styles.actionLandscape : styles.actionPortrait}>
           <AppButton title={nextStatusLabel} onPress={onToggleStatus} loading={updating} />
         </View>
         <View style={isLandscape ? styles.actionLandscape : styles.actionPortrait}>
-          <AppButton title="Close" onPress={handleCloseDetails} disabled={updating} variant="secondary" />
+          <AppButton title={i18n.t('commonClose')} onPress={handleCloseDetails} disabled={updating} variant="secondary" />
         </View>
       </View>
     </View>
@@ -230,17 +234,19 @@ export default function AlertDetails({ alert, onClose, onToggleStatus, updating,
  * @param {object} props - Component properties
  * @param {string} props.label - Detail label
  * @param {string} props.value - Detail value
+ * @param {boolean} props.translated - Whether the value is translated interface text
  * @param {object} props.style - Additional detail row style
  * @returns {JSX.Element} Alert detail row
  */
-function DetailRow({ label, value, style }) {
+function DetailRow({ label, value, translated = false, style }) {
   const { theme } = useTheme();
+  const { isHebrew } = useLanguage();
   const styles = createStyles(theme);
 
   return (
     <View style={[styles.row, style]}>
-      <Text style={styles.label}>{label}</Text>
-      <Text style={styles.value}>{value || 'N/A'}</Text>
+      <Text style={[styles.label, isHebrew && styles.rtlText]}>{label}</Text>
+      <Text style={[styles.value, (translated || !value) && isHebrew ? styles.rtlText : styles.technicalText]}>{value || i18n.t('commonNotAvailable')}</Text>
     </View>
   );
 }
@@ -277,6 +283,9 @@ const createStyles = (theme) => StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 10,
+  },
+  rowRtl: {
+    flexDirection: 'row-reverse',
   },
   detailPortrait: {
     width: '100%',
@@ -355,5 +364,13 @@ const createStyles = (theme) => StyleSheet.create({
   actionLandscape: {
     flexBasis: '48%',
     flexGrow: 1,
+  },
+  rtlText: {
+    textAlign: 'right',
+    writingDirection: 'rtl',
+  },
+  technicalText: {
+    textAlign: 'left',
+    writingDirection: 'ltr',
   },
 });

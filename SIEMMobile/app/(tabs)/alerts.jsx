@@ -8,8 +8,11 @@ import LoadingBox from '../../src/components/common/LoadingBox';
 import StatusMessage from '../../src/components/common/StatusMessage';
 import AlertCard from '../../src/components/alerts/AlertCard';
 import AlertDetails from '../../src/components/alerts/AlertDetails';
+import { useLanguage } from '../../src/context/LanguageContext';
 import { useTheme } from '../../src/context/ThemeContext';
 import { useOrientation } from '../../src/hooks/useOrientation';
+import i18n from '../../src/localization/i18n';
+import { getAlertSeverityLabel, getAlertStatusLabel } from '../../src/localization/labels';
 import { getAlerts, updateAlertStatus } from '../../src/services/alertsService';
 
 const LIMIT = 25;
@@ -23,6 +26,7 @@ const emptyFilters = {
 
 export default function AlertsScreen() {
   const { theme } = useTheme();
+  const { isHebrew } = useLanguage();
   const { isLandscape, width, height } = useOrientation();
   const styles = createStyles(theme);
   const [alerts, setAlerts] = useState([]);
@@ -47,7 +51,7 @@ export default function AlertsScreen() {
 
     try {
       if (nextFilters.from && nextFilters.to && new Date(nextFilters.from) > new Date(nextFilters.to)) {
-        setError('Start date must be before end date');
+        setError(i18n.t('alertsInvalidDateRange'));
         return;
       }
 
@@ -60,7 +64,7 @@ export default function AlertsScreen() {
       setAlerts(data.items || []);
       setPage(data.page || { limit: LIMIT, skip, total: 0 });
     } catch (err) {
-      setError(err.error || 'Failed to load alerts');
+      setError(err.error || i18n.t('alertsFailedToLoad'));
     } finally {
       setIsLoading(false);
       setRefreshing(false);
@@ -104,9 +108,9 @@ export default function AlertsScreen() {
 
       setSelectedAlert(updatedAlert);
       setAlerts(alerts.map((alert) => (alert.id === selectedAlert.id ? updatedAlert : alert)));
-      setSuccessMessage(nextStatus === 'closed' ? 'Alert closed successfully' : 'Alert reopened successfully');
+      setSuccessMessage(nextStatus === 'closed' ? i18n.t('alertsClosedSuccess') : i18n.t('alertsReopenedSuccess'));
     } catch (err) {
-      setUpdateError(err.error || 'Failed to update alert status');
+      setUpdateError(err.error || i18n.t('alertsUpdateFailed'));
     } finally {
       setUpdating(false);
     }
@@ -140,7 +144,7 @@ export default function AlertsScreen() {
   }, []);
 
   if (isLoading && !alerts.length) {
-    return <LoadingBox message="Loading security alerts..." />;
+    return <LoadingBox message={i18n.t('alertsLoading')} />;
   }
 
   const totalPages = Math.max(Math.ceil(page.total / page.limit), 1);
@@ -149,6 +153,14 @@ export default function AlertsScreen() {
     width: Math.min(width, isLandscape ? 960 : width),
     minHeight: height,
   };
+  const statusOptions = [
+    { value: '', label: i18n.t('commonAll') },
+    ...['open', 'closed'].map((value) => ({ value, label: getAlertStatusLabel(value) })),
+  ];
+  const severityOptions = [
+    { value: '', label: i18n.t('commonAll') },
+    ...['low', 'medium', 'high', 'critical'].map((value) => ({ value, label: getAlertSeverityLabel(value) })),
+  ];
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -164,60 +176,60 @@ export default function AlertsScreen() {
         ]}
         ListHeaderComponent={
           <View>
-            <Text style={styles.title}>Security Alerts</Text>
-            <Text style={styles.subtitle}>Monitor critical security alerts and incidents.</Text>
+            <Text style={[styles.title, isHebrew && styles.rtlText]}>{i18n.t('alertsTitle')}</Text>
+            <Text style={[styles.subtitle, isHebrew && styles.rtlText]}>{i18n.t('alertsSubtitle')}</Text>
             <StatusMessage message={error} />
 
             <View style={styles.filters}>
-              <Text style={styles.filterTitle}>Filters</Text>
-              <View style={isLandscape ? styles.filterFieldsLandscape : styles.filterFieldsPortrait}>
+              <Text style={[styles.filterTitle, isHebrew && styles.rtlText]}>{i18n.t('logFiltersTitle')}</Text>
+              <View style={[isLandscape ? styles.filterFieldsLandscape : styles.filterFieldsPortrait, isLandscape && isHebrew && styles.rowRtl]}>
                 <View style={isLandscape ? styles.filterFieldLandscape : styles.filterFieldPortrait}>
                   <ChoiceRow
-                    label="Status"
+                    label={i18n.t('alertFilterStatus')}
                     value={filters.status}
-                    options={['', 'open', 'closed']}
+                    options={statusOptions}
                     onChange={(value) => updateFilter('status', value)}
                   />
                 </View>
                 <View style={isLandscape ? styles.filterFieldLandscape : styles.filterFieldPortrait}>
                   <ChoiceRow
-                    label="Severity"
+                    label={i18n.t('alertFilterSeverity')}
                     value={filters.severity}
-                    options={['', 'low', 'medium', 'high', 'critical']}
+                    options={severityOptions}
                     onChange={(value) => updateFilter('severity', value)}
                   />
                 </View>
                 <View style={isLandscape ? styles.filterFieldLandscape : styles.filterFieldPortrait}>
-                  <AppTextInput label="Search" value={filters.q} onChangeText={(value) => updateFilter('q', value)} placeholder="Search alerts" editable={!isLoading} />
+                  <AppTextInput label={i18n.t('logFilterSearch')} value={filters.q} onChangeText={(value) => updateFilter('q', value)} placeholder={i18n.t('alertFilterSearchPlaceholder')} editable={!isLoading} />
                 </View>
                 <View style={isLandscape ? styles.filterFieldLandscape : styles.filterFieldPortrait}>
-                  <AppTextInput label="From" value={filters.from} onChangeText={(value) => updateFilter('from', value)} placeholder="2026-07-09T10:00:00.000Z" editable={!isLoading} />
+                  <AppTextInput label={i18n.t('logFilterFrom')} value={filters.from} onChangeText={(value) => updateFilter('from', value)} placeholder="2026-07-09T10:00:00.000Z" editable={!isLoading} forceLtr />
                 </View>
                 <View style={isLandscape ? styles.filterFieldLandscape : styles.filterFieldPortrait}>
-                  <AppTextInput label="To" value={filters.to} onChangeText={(value) => updateFilter('to', value)} placeholder="2026-07-09T12:00:00.000Z" editable={!isLoading} />
+                  <AppTextInput label={i18n.t('logFilterTo')} value={filters.to} onChangeText={(value) => updateFilter('to', value)} placeholder="2026-07-09T12:00:00.000Z" editable={!isLoading} forceLtr />
                 </View>
               </View>
-              <View style={[styles.filterActions, isLandscape ? styles.filterActionsLandscape : styles.filterActionsPortrait]}>
+              <View style={[styles.filterActions, isLandscape ? styles.filterActionsLandscape : styles.filterActionsPortrait, isLandscape && isHebrew && styles.rowRtl]}>
                 <View style={isLandscape ? styles.filterActionLandscape : styles.filterActionPortrait}>
-                  <AppButton title="Apply" onPress={handleApplyFilters} loading={isLoading} />
+                  <AppButton title={i18n.t('commonApply')} onPress={handleApplyFilters} loading={isLoading} />
                 </View>
                 <View style={isLandscape ? styles.filterActionLandscape : styles.filterActionPortrait}>
-                  <AppButton title="Clear" onPress={handleClearFilters} disabled={isLoading} variant="secondary" />
+                  <AppButton title={i18n.t('commonClear')} onPress={handleClearFilters} disabled={isLoading} variant="secondary" />
                 </View>
               </View>
             </View>
 
-            <Text style={styles.pageText}>
-              Page {currentPage} of {totalPages} · {page.total} alerts
+            <Text style={[styles.pageText, isHebrew && styles.rtlText]}>
+              {i18n.t('alertsPageSummary', { current: currentPage, total: totalPages, count: page.total })}
             </Text>
           </View>
         }
-        ListEmptyComponent={<EmptyState title="No alerts found" message="Try changing the filters or pull to refresh." />}
+        ListEmptyComponent={<EmptyState title={i18n.t('alertsEmptyTitle')} message={i18n.t('alertsEmptyMessage')} />}
         ListFooterComponent={
           alerts.length ? (
             <View style={styles.pagination}>
-              <AppButton title="Previous" onPress={handlePrevPage} disabled={page.skip === 0 || isLoading} variant="secondary" />
-              <AppButton title="Next" onPress={handleNextPage} disabled={page.skip + page.limit >= page.total || isLoading} variant="secondary" />
+              <AppButton title={i18n.t('commonPrevious')} onPress={handlePrevPage} disabled={page.skip === 0 || isLoading} variant="secondary" />
+              <AppButton title={i18n.t('commonNext')} onPress={handleNextPage} disabled={page.skip + page.limit >= page.total || isLoading} variant="secondary" />
             </View>
           ) : null
         }
@@ -260,19 +272,20 @@ export default function AlertsScreen() {
 
 function ChoiceRow({ label, value, options, onChange }) {
   const { theme } = useTheme();
+  const { isHebrew } = useLanguage();
   const styles = createStyles(theme);
 
   return (
     <View style={styles.choiceGroup}>
-      <Text style={styles.choiceLabel}>{label}</Text>
-      <View style={styles.choiceRow}>
+      <Text style={[styles.choiceLabel, isHebrew && styles.rtlText]}>{label}</Text>
+      <View style={[styles.choiceRow, isHebrew && styles.rowRtl]}>
         {options.map((option) => (
           <Text
-            key={option || 'all'}
-            style={[styles.choiceButton, value === option && styles.choiceButtonActive]}
-            onPress={() => onChange(option)}
+            key={option.value || 'all'}
+            style={[styles.choiceButton, value === option.value && styles.choiceButtonActive]}
+            onPress={() => onChange(option.value)}
           >
-            {option || 'all'}
+            {option.label}
           </Text>
         ))}
       </View>
@@ -337,6 +350,9 @@ const createStyles = (theme) => StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
+  },
+  rowRtl: {
+    flexDirection: 'row-reverse',
   },
   choiceButton: {
     overflow: 'hidden',
@@ -406,5 +422,9 @@ const createStyles = (theme) => StyleSheet.create({
   },
   modalLandscape: {
     maxWidth: 960,
+  },
+  rtlText: {
+    textAlign: 'right',
+    writingDirection: 'rtl',
   },
 });

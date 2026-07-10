@@ -6,14 +6,18 @@ import EmptyState from '../../src/components/common/EmptyState';
 import LoadingBox from '../../src/components/common/LoadingBox';
 import StatusMessage from '../../src/components/common/StatusMessage';
 import { useAuth } from '../../src/context/AuthContext';
+import { useLanguage } from '../../src/context/LanguageContext';
 import { useTheme } from '../../src/context/ThemeContext';
 import { useOrientation } from '../../src/hooks/useOrientation';
+import i18n from '../../src/localization/i18n';
+import { getAlertSeverityLabel, getAlertStatusLabel, getUserRoleLabel } from '../../src/localization/labels';
 import { getStats } from '../../src/services/statsService';
 import { formatDateTime } from '../../src/utils/formatDate';
 
 export default function DashboardScreen() {
   const { isLandscape } = useOrientation();
   const { user, tenant } = useAuth();
+  const { isHebrew } = useLanguage();
   const { theme } = useTheme();
   const styles = createStyles(theme);
   const [stats, setStats] = useState();
@@ -29,7 +33,7 @@ export default function DashboardScreen() {
       const data = await getStats(selectedRange);
       setStats(data);
     } catch (err) {
-      setError(err.error || 'Failed to load statistics');
+      setError(err.error || i18n.t('dashboardFailedToLoad'));
     } finally {
       setIsLoading(false);
     }
@@ -45,7 +49,7 @@ export default function DashboardScreen() {
   }, []);
 
   if (isLoading && !stats) {
-    return <LoadingBox message="Loading dashboard statistics..." />;
+    return <LoadingBox message={i18n.t('dashboardLoading')} />;
   }
 
   return (
@@ -58,19 +62,19 @@ export default function DashboardScreen() {
             : styles.containerPortrait,
         ]}
       >
-        <Text style={styles.title}>Security Dashboard</Text>
-        <Text style={styles.subtitle}>{tenant?.name || 'SIEM Portal'}</Text>
+        <Text style={[styles.title, isHebrew && styles.rtlText]}>{i18n.t('dashboardTitle')}</Text>
+        <Text style={styles.subtitle}>{tenant?.name || i18n.t('authPortalName')}</Text>
 
         <View style={[styles.infoGrid, isLandscape ? styles.cardsLandscape : styles.cardsPortrait]}>
-          <InfoCard label="Email" value={user?.email || 'N/A'} style={isLandscape ? styles.cardLandscape : styles.cardPortrait} />
-          <InfoCard label="Role" value={user?.role || 'N/A'} style={isLandscape ? styles.cardLandscape : styles.cardPortrait} />
+          <InfoCard label={i18n.t('dashboardEmail')} value={user?.email} technical style={isLandscape ? styles.cardLandscape : styles.cardPortrait} />
+          <InfoCard label={i18n.t('dashboardRole')} value={user?.role ? getUserRoleLabel(user.role) : undefined} style={isLandscape ? styles.cardLandscape : styles.cardPortrait} />
         </View>
 
-        <View style={styles.rangeRow}>
+        <View style={[styles.rangeRow, isHebrew && styles.rowRtl]}>
           {[
-            { label: '24h', value: '24h' },
-            { label: '7d', value: '7d' },
-            { label: '30d', value: '30d' },
+            { label: i18n.t('dashboardRange24Hours'), value: '24h' },
+            { label: i18n.t('dashboardRange7Days'), value: '7d' },
+            { label: i18n.t('dashboardRange30Days'), value: '30d' },
           ].map((item) => (
             <Pressable
               key={item.value}
@@ -85,13 +89,13 @@ export default function DashboardScreen() {
         </View>
 
         <StatusMessage message={error} />
-        {error ? <AppButton title="Try Again" onPress={() => fetchStats()} loading={isLoading} /> : null}
+        {error ? <AppButton title={i18n.t('dashboardTryAgain')} onPress={() => fetchStats()} loading={isLoading} /> : null}
 
         <View style={[styles.statsGrid, isLandscape ? styles.cardsLandscape : styles.cardsPortrait]}>
-          <StatCard label="Total Logs" value={stats?.counts?.totalLogs || 0} style={isLandscape ? styles.cardLandscape : styles.cardPortrait} />
-          <StatCard label="Open Alerts" value={stats?.counts?.openAlerts || 0} style={isLandscape ? styles.cardLandscape : styles.cardPortrait} />
-          <StatCard label="Warnings" value={stats?.counts?.byLevel?.warn || 0} style={isLandscape ? styles.cardLandscape : styles.cardPortrait} />
-          <StatCard label="Errors" value={stats?.counts?.byLevel?.error || 0} style={isLandscape ? styles.cardLandscape : styles.cardPortrait} />
+          <StatCard label={i18n.t('dashboardTotalLogs')} value={stats?.counts?.totalLogs || 0} style={isLandscape ? styles.cardLandscape : styles.cardPortrait} />
+          <StatCard label={i18n.t('dashboardOpenAlerts')} value={stats?.counts?.openAlerts || 0} style={isLandscape ? styles.cardLandscape : styles.cardPortrait} />
+          <StatCard label={i18n.t('dashboardWarnings')} value={stats?.counts?.byLevel?.warn || 0} style={isLandscape ? styles.cardLandscape : styles.cardPortrait} />
+          <StatCard label={i18n.t('dashboardErrors')} value={stats?.counts?.byLevel?.error || 0} style={isLandscape ? styles.cardLandscape : styles.cardPortrait} />
         </View>
 
         <View
@@ -101,46 +105,46 @@ export default function DashboardScreen() {
           ]}
         >
           <ListCard
-            title="Top IPs"
+            title={i18n.t('dashboardTopIps')}
             items={stats?.topIps || []}
             labelKey="ip"
-            emptyTitle="No IP data"
+            emptyTitle={i18n.t('dashboardNoIpData')}
             style={isLandscape ? styles.cardLandscape : styles.cardPortrait}
           />
 
           <ListCard
-            title="Top Event Types"
+            title={i18n.t('dashboardTopEventTypes')}
             items={stats?.topEventTypes || []}
             labelKey="eventType"
-            emptyTitle="No event type data"
+            emptyTitle={i18n.t('dashboardNoEventTypeData')}
             style={isLandscape ? styles.cardLandscape : styles.cardPortrait}
           />
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Recent Alerts</Text>
+          <Text style={[styles.cardTitle, isHebrew && styles.rtlText]}>{i18n.t('dashboardRecentAlerts')}</Text>
           {stats?.recent?.alerts?.length ? (
             stats.recent.alerts.slice(0, 6).map((alert) => (
               <View key={alert.id} style={styles.alertItem}>
                 <View style={styles.alertHeader}>
-                  <Text style={styles.alertName}>{alert.ruleName || 'Security Alert'}</Text>
+                  <Text style={styles.alertName}>{alert.ruleName || i18n.t('dashboardSecurityAlertFallback')}</Text>
                   <Text style={styles.alertTime}>{formatDateTime(alert.timestamp)}</Text>
                 </View>
                 <Text style={styles.alertDescription} numberOfLines={2}>
-                  {alert.description || 'No description'}
+                  {alert.description || i18n.t('dashboardNoDescription')}
                 </Text>
-                <View style={styles.badgeRow}>
+                <View style={[styles.badgeRow, isHebrew && styles.rowRtl]}>
                   <Text style={[styles.badge, styles[`severity_${alert.severity || 'low'}`]]}>
-                    {alert.severity || 'low'}
+                    {getAlertSeverityLabel(alert.severity || 'low')}
                   </Text>
                   <Text style={[styles.badge, alert.status === 'closed' ? styles.closed : styles.open]}>
-                    {alert.status || 'open'}
+                    {getAlertStatusLabel(alert.status || 'open')}
                   </Text>
                 </View>
               </View>
             ))
           ) : (
-            <EmptyState title="No recent alerts" message="Recent alerts will appear here." />
+            <EmptyState title={i18n.t('dashboardNoRecentAlerts')} message={i18n.t('dashboardRecentAlertsMessage')} />
           )}
         </View>
       </ScrollView>
@@ -148,25 +152,29 @@ export default function DashboardScreen() {
   );
 }
 
-function InfoCard({ label, value, style }) {
+function InfoCard({ label, value, technical, style }) {
   const { theme } = useTheme();
+  const { isHebrew } = useLanguage();
   const styles = createStyles(theme);
 
   return (
     <View style={[styles.infoCard, style]}>
-      <Text style={styles.infoLabel}>{label}</Text>
-      <Text style={styles.infoValue}>{value}</Text>
+      <Text style={[styles.infoLabel, isHebrew && styles.rtlText]}>{label}</Text>
+      <Text style={[styles.infoValue, isHebrew && (!technical || !value) && styles.rtlText, technical && value && styles.technicalText]}>
+        {value || i18n.t('commonNotAvailable')}
+      </Text>
     </View>
   );
 }
 
 function StatCard({ label, value, style }) {
   const { theme } = useTheme();
+  const { isHebrew } = useLanguage();
   const styles = createStyles(theme);
 
   return (
     <View style={[styles.statCard, style]}>
-      <Text style={styles.statLabel}>{label}</Text>
+      <Text style={[styles.statLabel, isHebrew && styles.rtlText]}>{label}</Text>
       <Text style={styles.statValue}>{value}</Text>
     </View>
   );
@@ -174,20 +182,21 @@ function StatCard({ label, value, style }) {
 
 function ListCard({ title, items, labelKey, emptyTitle, style }) {
   const { theme } = useTheme();
+  const { isHebrew } = useLanguage();
   const styles = createStyles(theme);
 
   return (
     <View style={[styles.card, style]}>
-      <Text style={styles.cardTitle}>{title}</Text>
+      <Text style={[styles.cardTitle, isHebrew && styles.rtlText]}>{title}</Text>
       {items.length ? (
         items.slice(0, 8).map((item, index) => (
-          <View key={`${item[labelKey]}-${index}`} style={styles.listItem}>
-            <Text style={styles.listLabel}>{item[labelKey] || 'Unknown'}</Text>
+          <View key={`${item[labelKey]}-${index}`} style={[styles.listItem, isHebrew && styles.rowRtl]}>
+            <Text style={[styles.listLabel, styles.technicalText]}>{item[labelKey] || i18n.t('commonUnknown')}</Text>
             <Text style={styles.listCount}>{item.count}</Text>
           </View>
         ))
       ) : (
-        <EmptyState title={emptyTitle} message="Data will appear when logs are available." />
+        <EmptyState title={emptyTitle} message={i18n.t('dashboardDataAvailableMessage')} />
       )}
     </View>
   );
@@ -259,6 +268,9 @@ const createStyles = (theme) => StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
     marginBottom: 16,
+  },
+  rowRtl: {
+    flexDirection: 'row-reverse',
   },
   rangeButton: {
     flex: 1,
@@ -393,5 +405,13 @@ const createStyles = (theme) => StyleSheet.create({
   },
   closed: {
     backgroundColor: theme.mutedText,
+  },
+  rtlText: {
+    textAlign: 'right',
+    writingDirection: 'rtl',
+  },
+  technicalText: {
+    textAlign: 'left',
+    writingDirection: 'ltr',
   },
 });

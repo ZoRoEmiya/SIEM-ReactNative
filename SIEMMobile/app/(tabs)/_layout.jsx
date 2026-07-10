@@ -1,13 +1,17 @@
 import { Redirect, Tabs, useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
+import LanguageSwitcher from '../../src/components/common/LanguageSwitcher';
 import LoadingBox from '../../src/components/common/LoadingBox';
 import { useAuth } from '../../src/context/AuthContext';
+import { useLanguage } from '../../src/context/LanguageContext';
 import { useTheme } from '../../src/context/ThemeContext';
 import { useOrientation } from '../../src/hooks/useOrientation';
+import i18n from '../../src/localization/i18n';
 
 export default function TabsLayout() {
   const router = useRouter();
   const { user, isLoading, logout } = useAuth();
+  const { isHebrew } = useLanguage();
   const { theme, isDarkMode, toggleTheme } = useTheme();
   const { isLandscape } = useOrientation();
   const isAdmin = user?.role === 'admin';
@@ -18,7 +22,7 @@ export default function TabsLayout() {
   };
 
   if (isLoading) {
-    return <LoadingBox message="Restoring session..." />;
+    return <LoadingBox message={i18n.t('navigationRestoringSession')} />;
   }
 
   if (!user) {
@@ -30,7 +34,10 @@ export default function TabsLayout() {
       screenOptions={{
         headerStyle: { backgroundColor: theme.headerBackground },
         headerTintColor: theme.headerText,
-        headerTitleStyle: { color: theme.headerText },
+        headerTitleStyle: {
+          color: theme.headerText,
+          writingDirection: isHebrew ? 'rtl' : 'ltr',
+        },
         tabBarStyle: [
           {
             backgroundColor: theme.tabBarBackground,
@@ -42,9 +49,10 @@ export default function TabsLayout() {
         tabBarActiveTintColor: theme.tabBarActive,
         tabBarInactiveTintColor: theme.tabBarInactive,
         headerRight: () => (
-          <View style={styles.headerActions}>
-            <View style={styles.themeControl}>
-              <Text style={[styles.themeLabel, { color: theme.headerText }]}>Dark</Text>
+          <View style={[styles.headerActions, isHebrew && styles.headerActionsRtl]}>
+            <LanguageSwitcher compact />
+            <View style={[styles.themeControl, isHebrew && styles.themeControlRtl]}>
+              <Text style={[styles.themeLabel, { color: theme.headerText }, isHebrew && styles.rtlText]}>{i18n.t('headerDarkMode')}</Text>
               <Switch
                 trackColor={{ false: theme.border, true: theme.primary }}
                 thumbColor={theme.headerText}
@@ -53,18 +61,18 @@ export default function TabsLayout() {
               />
             </View>
             <Pressable style={styles.logoutButton} onPress={handleLogout}>
-              <Text style={[styles.logoutText, { color: theme.headerText }]}>Sign Out</Text>
+              <Text style={[styles.logoutText, { color: theme.headerText }, isHebrew && styles.rtlText]}>{i18n.t('headerSignOut')}</Text>
             </Pressable>
           </View>
         ),
       }}
     >
-      <Tabs.Screen name="dashboard" options={{ title: 'Dashboard' }} />
-      <Tabs.Screen name="logs" options={{ title: 'Logs' }} />
-      <Tabs.Screen name="alerts" options={{ title: 'Alerts' }} />
-      <Tabs.Screen name="profile" options={{ title: 'Profile' }} />
-      <Tabs.Screen name="apiKeys" options={{ title: 'API Keys', href: isAdmin ? '/apiKeys' : null }} />
-      <Tabs.Screen name="users" options={{ title: 'Users', href: isAdmin ? '/users' : null }} />
+      <Tabs.Screen name="dashboard" options={{ title: i18n.t('tabsDashboard') }} />
+      <Tabs.Screen name="logs" options={{ title: i18n.t('tabsLogs') }} />
+      <Tabs.Screen name="alerts" options={{ title: i18n.t('tabsAlerts') }} />
+      <Tabs.Screen name="profile" options={{ title: i18n.t('tabsProfile') }} />
+      <Tabs.Screen name="apiKeys" options={{ title: i18n.t('tabsApiKeys'), href: isAdmin ? '/apiKeys' : null }} />
+      <Tabs.Screen name="users" options={{ title: i18n.t('tabsUsers'), href: isAdmin ? '/users' : null }} />
     </Tabs>
   );
 }
@@ -82,10 +90,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  headerActionsRtl: {
+    flexDirection: 'row-reverse',
+  },
   themeControl: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+  },
+  themeControlRtl: {
+    flexDirection: 'row-reverse',
   },
   themeLabel: {
     fontSize: 12,
@@ -98,5 +112,9 @@ const styles = StyleSheet.create({
   logoutText: {
     fontSize: 14,
     fontWeight: '700',
+  },
+  rtlText: {
+    textAlign: 'right',
+    writingDirection: 'rtl',
   },
 });

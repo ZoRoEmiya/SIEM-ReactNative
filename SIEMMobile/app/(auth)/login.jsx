@@ -4,16 +4,20 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AppButton from '../../src/components/common/AppButton';
 import AppTextInput from '../../src/components/common/AppTextInput';
+import LanguageSwitcher from '../../src/components/common/LanguageSwitcher';
 import StatusMessage from '../../src/components/common/StatusMessage';
 import { useAuth } from '../../src/context/AuthContext';
+import { useLanguage } from '../../src/context/LanguageContext';
 import { useTheme } from '../../src/context/ThemeContext';
 import { useOrientation } from '../../src/hooks/useOrientation';
+import i18n from '../../src/localization/i18n';
 import { loginUser } from '../../src/services/authService';
 import { isRequired } from '../../src/utils/validators';
 
 export default function LoginScreen() {
   const router = useRouter();
   const { login, user } = useAuth();
+  const { isHebrew } = useLanguage();
   const { theme } = useTheme();
   const { isLandscape } = useOrientation();
   const styles = createStyles(theme);
@@ -26,12 +30,12 @@ export default function LoginScreen() {
     setError('');
 
     if (!isRequired(email)) {
-      setError('Email is required');
+      setError(i18n.t('authEmailRequired'));
       return;
     }
 
     if (!isRequired(password)) {
-      setError('Password is required');
+      setError(i18n.t('authPasswordRequired'));
       return;
     }
 
@@ -42,7 +46,7 @@ export default function LoginScreen() {
       await login(data.user, data.tenant, data.token);
       router.replace('/dashboard');
     } catch (err) {
-      setError(err.error || 'Login failed. Please try again.');
+      setError(err.error || i18n.t('authLoginFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -70,36 +74,38 @@ export default function LoginScreen() {
           keyboardShouldPersistTaps="handled"
         >
           <View style={[styles.card, isLandscape && styles.cardLandscape]}>
-            <Text style={styles.logo}>SIEM Portal</Text>
-            <Text style={styles.title}>Welcome Back</Text>
-            <Text style={styles.subtitle}>Sign in to access your security dashboard</Text>
+            <LanguageSwitcher />
+            <Text style={styles.logo}>{i18n.t('authPortalName')}</Text>
+            <Text style={styles.title}>{i18n.t('authLoginTitle')}</Text>
+            <Text style={[styles.subtitle, isHebrew && styles.rtlText]}>{i18n.t('authLoginSubtitle')}</Text>
 
             <StatusMessage message={error} />
 
             <AppTextInput
-              label="Email Address"
+              label={i18n.t('authEmailLabel')}
               value={email}
               onChangeText={setEmail}
-              placeholder="name@company.com"
+              placeholder={i18n.t('authEmailPlaceholder')}
               keyboardType="email-address"
+              forceLtr
               editable={!isLoading}
             />
 
             <AppTextInput
-              label="Password"
+              label={i18n.t('authPasswordLabel')}
               value={password}
               onChangeText={setPassword}
-              placeholder="Password"
+              placeholder={i18n.t('authPasswordPlaceholder')}
               secureTextEntry
               editable={!isLoading}
             />
 
-            <AppButton title="Sign In" onPress={handleLogin} loading={isLoading} />
+            <AppButton title={i18n.t('authSignIn')} onPress={handleLogin} loading={isLoading} />
 
             <View style={styles.footer}>
-              <Text style={styles.footerText}>Don't have an account?</Text>
+              <Text style={[styles.footerText, isHebrew && styles.rtlText]}>{i18n.t('authNoAccount')}</Text>
               <Pressable onPress={() => router.push('/register')} disabled={isLoading}>
-                <Text style={styles.link}>Create one now</Text>
+                <Text style={[styles.link, isHebrew && styles.rtlText]}>{i18n.t('authCreateAccountLink')}</Text>
               </Pressable>
             </View>
           </View>
@@ -173,5 +179,9 @@ const createStyles = (theme) => StyleSheet.create({
     color: theme.primary,
     fontSize: 15,
     fontWeight: '700',
+  },
+  rtlText: {
+    textAlign: 'right',
+    writingDirection: 'rtl',
   },
 });

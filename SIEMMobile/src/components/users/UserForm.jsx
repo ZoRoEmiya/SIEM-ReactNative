@@ -1,40 +1,48 @@
 import { StyleSheet, Text, View } from 'react-native';
 import AppButton from '../common/AppButton';
 import AppTextInput from '../common/AppTextInput';
+import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
+import i18n from '../../localization/i18n';
+import { getUserRoleLabel } from '../../localization/labels';
 
 export default function UserForm({ email, password, role, onChangeEmail, onChangePassword, onChangeRole, onSubmit, onCancel, loading, isLandscape }) {
   const { theme } = useTheme();
+  const { isHebrew } = useLanguage();
   const styles = createStyles(theme);
+  const roleOptions = ['viewer', 'analyst', 'admin'].map((value) => ({
+    value,
+    label: getUserRoleLabel(value),
+  }));
 
   return (
     <View style={styles.container}>
-      <View style={isLandscape ? styles.fieldsLandscape : styles.fieldsPortrait}>
+      <View style={[isLandscape ? styles.fieldsLandscape : styles.fieldsPortrait, isLandscape && isHebrew && styles.rowRtl]}>
         <View style={isLandscape ? styles.fieldLandscape : styles.fieldPortrait}>
-          <AppTextInput label="Email" value={email} onChangeText={onChangeEmail} placeholder="user@example.com" keyboardType="email-address" editable={!loading} />
+          <AppTextInput label={i18n.t('commonEmail')} value={email} onChangeText={onChangeEmail} placeholder="user@example.com" keyboardType="email-address" editable={!loading} forceLtr />
         </View>
         <View style={isLandscape ? styles.fieldLandscape : styles.fieldPortrait}>
-          <AppTextInput label="Password" value={password} onChangeText={onChangePassword} placeholder="At least 8 characters" secureTextEntry editable={!loading} />
+          <AppTextInput label={i18n.t('commonPassword')} value={password} onChangeText={onChangePassword} placeholder={i18n.t('usersPasswordPlaceholder')} secureTextEntry editable={!loading} />
         </View>
       </View>
-      <Text style={styles.label}>Role</Text>
-      <View style={styles.roleRow}>
-        {['viewer', 'analyst', 'admin'].map((item) => (
+      <Text style={[styles.label, isHebrew && styles.rtlText]}>{i18n.t('commonRole')}</Text>
+      <View style={[styles.roleRow, isHebrew && styles.rowRtl]}>
+        {roleOptions.map((item) => (
           <Text
-            key={item}
-            style={[styles.roleButton, role === item && styles.roleButtonActive]}
-            onPress={() => onChangeRole(item)}
+            key={item.value}
+            style={[styles.roleButton, role === item.value && styles.roleButtonActive]}
+            onPress={() => onChangeRole(item.value)}
           >
-            {item}
+            {item.label}
           </Text>
         ))}
       </View>
-      <View style={[styles.actions, isLandscape ? styles.actionsLandscape : styles.actionsPortrait]}>
+      <View style={[styles.actions, isLandscape ? styles.actionsLandscape : styles.actionsPortrait, isLandscape && isHebrew && styles.rowRtl]}>
         <View style={isLandscape ? styles.actionLandscape : styles.actionPortrait}>
-          <AppButton title="Create User" onPress={onSubmit} loading={loading} />
+          <AppButton title={i18n.t('usersCreateAction')} onPress={onSubmit} loading={loading} />
         </View>
         <View style={isLandscape ? styles.actionLandscape : styles.actionPortrait}>
-          <AppButton title="Cancel" onPress={onCancel} disabled={loading} variant="secondary" />
+          <AppButton title={i18n.t('commonCancel')} onPress={onCancel} disabled={loading} variant="secondary" />
         </View>
       </View>
     </View>
@@ -95,10 +103,17 @@ const createStyles = (theme) => StyleSheet.create({
   actionsLandscape: {
     flexDirection: 'row',
   },
+  rowRtl: {
+    flexDirection: 'row-reverse',
+  },
   actionPortrait: {
     width: '100%',
   },
   actionLandscape: {
     flex: 1,
+  },
+  rtlText: {
+    textAlign: 'right',
+    writingDirection: 'rtl',
   },
 });

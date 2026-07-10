@@ -3,11 +3,14 @@ import { StyleSheet, Text, View } from 'react-native';
 import AppButton from '../common/AppButton';
 import AppTextInput from '../common/AppTextInput';
 import StatusMessage from '../common/StatusMessage';
+import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
+import i18n from '../../localization/i18n';
 import { isEmail, isPasswordLongEnough, isRequired } from '../../utils/validators';
 
 export default function ProfileForm({ user, onUpdate, disabled, onWorkingChange }) {
   const { theme } = useTheme();
+  const { isHebrew } = useLanguage();
   const styles = createStyles(theme);
   const [email, setEmail] = useState(user?.email || '');
   const [password, setPassword] = useState('');
@@ -53,12 +56,12 @@ export default function ProfileForm({ user, onUpdate, disabled, onWorkingChange 
 
     if (trimmedEmail !== currentEmail) {
       if (!isRequired(trimmedEmail)) {
-        setError('Email is required');
+        setError(i18n.t('authEmailRequired'));
         return;
       }
 
       if (!isEmail(trimmedEmail)) {
-        setError('Please provide a valid email address');
+        setError(i18n.t('validationValidEmail'));
         return;
       }
 
@@ -67,23 +70,23 @@ export default function ProfileForm({ user, onUpdate, disabled, onWorkingChange 
 
     if (password) {
       if (!isPasswordLongEnough(password)) {
-        setError('Password must be at least 8 characters');
+        setError(i18n.t('authPasswordMinimum'));
         return;
       }
 
       if (password !== confirmPassword) {
-        setError('Passwords do not match');
+        setError(i18n.t('profilePasswordsMismatch'));
         return;
       }
 
       updates.password = password;
     } else if (confirmPassword) {
-      setError('Enter a new password before confirming it');
+      setError(i18n.t('profilePasswordBeforeConfirmation'));
       return;
     }
 
     if (!Object.keys(updates).length) {
-      setError('No profile changes to save');
+      setError(i18n.t('profileNoChanges'));
       return;
     }
 
@@ -95,9 +98,9 @@ export default function ProfileForm({ user, onUpdate, disabled, onWorkingChange 
       setEmail(data.user.email);
       setPassword('');
       setConfirmPassword('');
-      setSuccessMessage('Profile updated successfully');
+      setSuccessMessage(i18n.t('profileUpdatedSuccess'));
     } catch (err) {
-      setError(err.error || 'Failed to update profile');
+      setError(err.error || i18n.t('profileUpdateFailed'));
     } finally {
       setIsLoading(false);
       onWorkingChange(false);
@@ -106,41 +109,42 @@ export default function ProfileForm({ user, onUpdate, disabled, onWorkingChange 
 
   return (
     <View style={styles.card}>
-      <Text style={styles.title}>Update Profile</Text>
-      <Text style={styles.description}>Change your email or set a new password.</Text>
+      <Text style={[styles.title, isHebrew && styles.rtlText]}>{i18n.t('profileUpdateTitle')}</Text>
+      <Text style={[styles.description, isHebrew && styles.rtlText]}>{i18n.t('profileUpdateDescription')}</Text>
 
       <StatusMessage message={successMessage} type="success" />
       <StatusMessage message={error} />
 
       <AppTextInput
-        label="Email Address"
+        label={i18n.t('authEmailLabel')}
         value={email}
         onChangeText={handleEmailChange}
-        placeholder="name@company.com"
+        placeholder={i18n.t('authEmailPlaceholder')}
         keyboardType="email-address"
+        forceLtr
         editable={!isLoading && !disabled}
       />
 
       <AppTextInput
-        label="New Password"
+        label={i18n.t('profileNewPassword')}
         value={password}
         onChangeText={handlePasswordChange}
-        placeholder="Leave blank to keep current password"
+        placeholder={i18n.t('profileNewPasswordPlaceholder')}
         secureTextEntry
         editable={!isLoading && !disabled}
       />
 
       <AppTextInput
-        label="Confirm New Password"
+        label={i18n.t('profileConfirmPassword')}
         value={confirmPassword}
         onChangeText={handleConfirmPasswordChange}
-        placeholder="Repeat new password"
+        placeholder={i18n.t('profileConfirmPasswordPlaceholder')}
         secureTextEntry
         editable={!isLoading && !disabled}
       />
 
       <AppButton
-        title="Save Changes"
+        title={i18n.t('profileSaveChanges')}
         onPress={handleSubmit}
         loading={isLoading}
         disabled={disabled}
@@ -169,5 +173,9 @@ const createStyles = (theme) => StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     marginBottom: 16,
+  },
+  rtlText: {
+    textAlign: 'right',
+    writingDirection: 'rtl',
   },
 });
