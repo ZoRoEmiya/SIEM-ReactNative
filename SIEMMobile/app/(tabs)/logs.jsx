@@ -8,6 +8,7 @@ import StatusMessage from '../../src/components/common/StatusMessage';
 import LogCard from '../../src/components/logs/LogCard';
 import LogFilters from '../../src/components/logs/LogFilters';
 import { useTheme } from '../../src/context/ThemeContext';
+import { useOrientation } from '../../src/hooks/useOrientation';
 import { getLogs } from '../../src/services/logsService';
 import { formatDateTime } from '../../src/utils/formatDate';
 
@@ -25,6 +26,7 @@ const emptyFilters = {
 
 export default function LogsScreen() {
   const { theme } = useTheme();
+  const { isLandscape, width, height } = useOrientation();
   const styles = createStyles(theme);
   const [logs, setLogs] = useState([]);
   const [filters, setFilters] = useState(emptyFilters);
@@ -101,6 +103,10 @@ export default function LogsScreen() {
 
   const totalPages = Math.max(Math.ceil(page.total / page.limit), 1);
   const currentPage = Math.floor(page.skip / page.limit) + 1;
+  const modalDimensions = {
+    width: Math.min(width, isLandscape ? 960 : width),
+    minHeight: height,
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -108,7 +114,12 @@ export default function LogsScreen() {
         data={logs}
         keyExtractor={(item, index) => item._id || item.id || `log-${index}`}
         renderItem={({ item }) => <LogCard log={item} onPress={() => setSelectedLog(item)} />}
-        contentContainerStyle={styles.container}
+        contentContainerStyle={[
+          styles.container,
+          isLandscape
+            ? styles.containerLandscape
+            : styles.containerPortrait,
+        ]}
         ListHeaderComponent={
           <View>
             <Text style={styles.title}>Security Logs</Text>
@@ -120,6 +131,7 @@ export default function LogsScreen() {
               onApply={handleApplyFilters}
               onClear={handleClearFilters}
               loading={isLoading}
+              isLandscape={isLandscape}
             />
             <Text style={styles.pageText}>
               Page {currentPage} of {totalPages} · {page.total} logs
@@ -147,15 +159,25 @@ export default function LogsScreen() {
 
       <Modal visible={Boolean(selectedLog)} animationType="slide" onRequestClose={() => setSelectedLog()}>
         <SafeAreaView style={styles.modalSafeArea}>
-          <ScrollView contentContainerStyle={styles.modalContainer}>
+          <ScrollView
+            contentContainerStyle={[
+              styles.modalContainer,
+              isLandscape
+                ? styles.modalContainerLandscape
+                : styles.modalContainerPortrait,
+              modalDimensions,
+            ]}
+          >
             <Text style={styles.modalTitle}>Log Details</Text>
-            <DetailRow label="Time" value={formatDateTime(selectedLog?.ts)} />
-            <DetailRow label="Level" value={selectedLog?.level} />
-            <DetailRow label="Event Type" value={selectedLog?.eventType} />
-            <DetailRow label="Source" value={selectedLog?.source} />
-            <DetailRow label="IP" value={selectedLog?.ip || 'N/A'} />
-            <DetailRow label="User" value={selectedLog?.user || 'N/A'} />
-            <DetailRow label="Message" value={selectedLog?.message} />
+            <View style={isLandscape ? styles.detailsLandscape : styles.detailsPortrait}>
+              <DetailRow label="Time" value={formatDateTime(selectedLog?.ts)} style={isLandscape ? styles.detailRowLandscape : styles.detailRowPortrait} />
+              <DetailRow label="Level" value={selectedLog?.level} style={isLandscape ? styles.detailRowLandscape : styles.detailRowPortrait} />
+              <DetailRow label="Event Type" value={selectedLog?.eventType} style={isLandscape ? styles.detailRowLandscape : styles.detailRowPortrait} />
+              <DetailRow label="Source" value={selectedLog?.source} style={isLandscape ? styles.detailRowLandscape : styles.detailRowPortrait} />
+              <DetailRow label="IP" value={selectedLog?.ip || 'N/A'} style={isLandscape ? styles.detailRowLandscape : styles.detailRowPortrait} />
+              <DetailRow label="User" value={selectedLog?.user || 'N/A'} style={isLandscape ? styles.detailRowLandscape : styles.detailRowPortrait} />
+              <DetailRow label="Message" value={selectedLog?.message} style={isLandscape ? styles.detailRowLandscape : styles.detailRowPortrait} />
+            </View>
 
             <Text style={styles.rawTitle}>Raw Data</Text>
             <Text style={styles.rawText}>{JSON.stringify(selectedLog?.raw || selectedLog, null, 2)}</Text>
@@ -168,12 +190,12 @@ export default function LogsScreen() {
   );
 }
 
-function DetailRow({ label, value }) {
+function DetailRow({ label, value, style }) {
   const { theme } = useTheme();
   const styles = createStyles(theme);
 
   return (
-    <View style={styles.detailRow}>
+    <View style={[styles.detailRow, style]}>
       <Text style={styles.detailLabel}>{label}</Text>
       <Text style={styles.detailValue}>{value || 'N/A'}</Text>
     </View>
@@ -186,8 +208,18 @@ const createStyles = (theme) => StyleSheet.create({
     backgroundColor: theme.background,
   },
   container: {
-    padding: 24,
+    width: '100%',
+    alignSelf: 'center',
     paddingBottom: 36,
+  },
+  containerPortrait: {
+    paddingHorizontal: 24,
+    paddingTop: 24,
+  },
+  containerLandscape: {
+    maxWidth: 1100,
+    paddingHorizontal: 32,
+    paddingTop: 20,
   },
   title: {
     fontSize: 28,
@@ -214,8 +246,16 @@ const createStyles = (theme) => StyleSheet.create({
     backgroundColor: theme.background,
   },
   modalContainer: {
-    padding: 24,
+    alignSelf: 'center',
     paddingBottom: 40,
+  },
+  modalContainerPortrait: {
+    paddingHorizontal: 24,
+    paddingTop: 24,
+  },
+  modalContainerLandscape: {
+    paddingHorizontal: 32,
+    paddingTop: 20,
   },
   modalTitle: {
     color: theme.text,
@@ -229,7 +269,22 @@ const createStyles = (theme) => StyleSheet.create({
     borderColor: theme.border,
     borderRadius: 8,
     padding: 12,
+  },
+  detailsPortrait: {
+    flexDirection: 'column',
+  },
+  detailsLandscape: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  detailRowPortrait: {
+    width: '100%',
     marginBottom: 10,
+  },
+  detailRowLandscape: {
+    flexBasis: '48%',
+    flexGrow: 1,
   },
   detailLabel: {
     color: theme.mutedText,

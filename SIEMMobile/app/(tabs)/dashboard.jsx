@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AppButton from '../../src/components/common/AppButton';
 import EmptyState from '../../src/components/common/EmptyState';
@@ -7,11 +7,12 @@ import LoadingBox from '../../src/components/common/LoadingBox';
 import StatusMessage from '../../src/components/common/StatusMessage';
 import { useAuth } from '../../src/context/AuthContext';
 import { useTheme } from '../../src/context/ThemeContext';
+import { useOrientation } from '../../src/hooks/useOrientation';
 import { getStats } from '../../src/services/statsService';
 import { formatDateTime } from '../../src/utils/formatDate';
 
 export default function DashboardScreen() {
-  const { width } = useWindowDimensions();
+  const { isLandscape } = useOrientation();
   const { user, tenant } = useAuth();
   const { theme } = useTheme();
   const styles = createStyles(theme);
@@ -19,7 +20,6 @@ export default function DashboardScreen() {
   const [range, setRange] = useState('24h');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const isWide = width >= 700;
 
   const fetchStats = async (selectedRange = range) => {
     setIsLoading(true);
@@ -50,13 +50,20 @@ export default function DashboardScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.container,
+          isLandscape
+            ? styles.containerLandscape
+            : styles.containerPortrait,
+        ]}
+      >
         <Text style={styles.title}>Security Dashboard</Text>
         <Text style={styles.subtitle}>{tenant?.name || 'SIEM Portal'}</Text>
 
-        <View style={[styles.infoGrid, isWide && styles.twoColumns]}>
-          <InfoCard label="Email" value={user?.email || 'N/A'} />
-          <InfoCard label="Role" value={user?.role || 'N/A'} />
+        <View style={[styles.infoGrid, isLandscape ? styles.cardsLandscape : styles.cardsPortrait]}>
+          <InfoCard label="Email" value={user?.email || 'N/A'} style={isLandscape ? styles.cardLandscape : styles.cardPortrait} />
+          <InfoCard label="Role" value={user?.role || 'N/A'} style={isLandscape ? styles.cardLandscape : styles.cardPortrait} />
         </View>
 
         <View style={styles.rangeRow}>
@@ -80,26 +87,35 @@ export default function DashboardScreen() {
         <StatusMessage message={error} />
         {error ? <AppButton title="Try Again" onPress={() => fetchStats()} loading={isLoading} /> : null}
 
-        <View style={[styles.statsGrid, isWide && styles.twoColumns]}>
-          <StatCard label="Total Logs" value={stats?.counts?.totalLogs || 0} />
-          <StatCard label="Open Alerts" value={stats?.counts?.openAlerts || 0} />
-          <StatCard label="Warnings" value={stats?.counts?.byLevel?.warn || 0} />
-          <StatCard label="Errors" value={stats?.counts?.byLevel?.error || 0} />
+        <View style={[styles.statsGrid, isLandscape ? styles.cardsLandscape : styles.cardsPortrait]}>
+          <StatCard label="Total Logs" value={stats?.counts?.totalLogs || 0} style={isLandscape ? styles.cardLandscape : styles.cardPortrait} />
+          <StatCard label="Open Alerts" value={stats?.counts?.openAlerts || 0} style={isLandscape ? styles.cardLandscape : styles.cardPortrait} />
+          <StatCard label="Warnings" value={stats?.counts?.byLevel?.warn || 0} style={isLandscape ? styles.cardLandscape : styles.cardPortrait} />
+          <StatCard label="Errors" value={stats?.counts?.byLevel?.error || 0} style={isLandscape ? styles.cardLandscape : styles.cardPortrait} />
         </View>
 
-        <ListCard
-          title="Top IPs"
-          items={stats?.topIps || []}
-          labelKey="ip"
-          emptyTitle="No IP data"
-        />
+        <View
+          style={[
+            isLandscape ? styles.cardsLandscape : styles.cardsPortrait,
+            isLandscape && styles.listGridLandscape,
+          ]}
+        >
+          <ListCard
+            title="Top IPs"
+            items={stats?.topIps || []}
+            labelKey="ip"
+            emptyTitle="No IP data"
+            style={isLandscape ? styles.cardLandscape : styles.cardPortrait}
+          />
 
-        <ListCard
-          title="Top Event Types"
-          items={stats?.topEventTypes || []}
-          labelKey="eventType"
-          emptyTitle="No event type data"
-        />
+          <ListCard
+            title="Top Event Types"
+            items={stats?.topEventTypes || []}
+            labelKey="eventType"
+            emptyTitle="No event type data"
+            style={isLandscape ? styles.cardLandscape : styles.cardPortrait}
+          />
+        </View>
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Recent Alerts</Text>
@@ -132,36 +148,36 @@ export default function DashboardScreen() {
   );
 }
 
-function InfoCard({ label, value }) {
+function InfoCard({ label, value, style }) {
   const { theme } = useTheme();
   const styles = createStyles(theme);
 
   return (
-    <View style={styles.infoCard}>
+    <View style={[styles.infoCard, style]}>
       <Text style={styles.infoLabel}>{label}</Text>
       <Text style={styles.infoValue}>{value}</Text>
     </View>
   );
 }
 
-function StatCard({ label, value }) {
+function StatCard({ label, value, style }) {
   const { theme } = useTheme();
   const styles = createStyles(theme);
 
   return (
-    <View style={styles.statCard}>
+    <View style={[styles.statCard, style]}>
       <Text style={styles.statLabel}>{label}</Text>
       <Text style={styles.statValue}>{value}</Text>
     </View>
   );
 }
 
-function ListCard({ title, items, labelKey, emptyTitle }) {
+function ListCard({ title, items, labelKey, emptyTitle, style }) {
   const { theme } = useTheme();
   const styles = createStyles(theme);
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, style]}>
       <Text style={styles.cardTitle}>{title}</Text>
       {items.length ? (
         items.slice(0, 8).map((item, index) => (
@@ -183,8 +199,15 @@ const createStyles = (theme) => StyleSheet.create({
     backgroundColor: theme.background,
   },
   container: {
-    padding: 24,
     paddingBottom: 40,
+  },
+  containerPortrait: {
+    paddingHorizontal: 24,
+    paddingTop: 24,
+  },
+  containerLandscape: {
+    paddingHorizontal: 32,
+    paddingTop: 20,
   },
   title: {
     fontSize: 28,
@@ -201,11 +224,21 @@ const createStyles = (theme) => StyleSheet.create({
     gap: 12,
     marginBottom: 16,
   },
-  twoColumns: {
+  cardsPortrait: {
+    flexDirection: 'column',
+  },
+  cardsLandscape: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  cardPortrait: {
+    width: '100%',
+  },
+  cardLandscape: {
+    flexBasis: '48%',
+    flexGrow: 1,
   },
   infoCard: {
-    flex: 1,
     backgroundColor: theme.card,
     borderRadius: 8,
     borderWidth: 1,
@@ -253,7 +286,6 @@ const createStyles = (theme) => StyleSheet.create({
     marginBottom: 16,
   },
   statCard: {
-    flex: 1,
     backgroundColor: theme.card,
     borderRadius: 8,
     borderWidth: 1,
@@ -277,6 +309,9 @@ const createStyles = (theme) => StyleSheet.create({
     borderColor: theme.border,
     padding: 16,
     marginBottom: 16,
+  },
+  listGridLandscape: {
+    gap: 12,
   },
   cardTitle: {
     color: theme.text,

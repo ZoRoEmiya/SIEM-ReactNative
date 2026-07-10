@@ -9,12 +9,14 @@ import UserCard from '../../src/components/users/UserCard';
 import UserForm from '../../src/components/users/UserForm';
 import { useAuth } from '../../src/context/AuthContext';
 import { useTheme } from '../../src/context/ThemeContext';
+import { useOrientation } from '../../src/hooks/useOrientation';
 import { createUser, deleteUser, getUsers, updateUserRole } from '../../src/services/usersService';
 import { isEmail, isPasswordLongEnough, isRequired } from '../../src/utils/validators';
 
 export default function UsersScreen() {
   const { user } = useAuth();
   const { theme } = useTheme();
+  const { isLandscape, width, height } = useOrientation();
   const styles = createStyles(theme);
   const [users, setUsers] = useState([]);
   const [newEmail, setNewEmail] = useState('');
@@ -28,6 +30,13 @@ export default function UsersScreen() {
   const [error, setError] = useState('');
   const [formError, setFormError] = useState('');
   const isAdmin = user?.role === 'admin';
+  const modalDimensions = {
+    width: Math.min(width, isLandscape ? 760 : width),
+    minHeight: height,
+  };
+  const confirmDimensions = {
+    width: Math.min(Math.max(width - (isLandscape ? 64 : 48), 0), 640),
+  };
 
   const fetchUsers = async () => {
     setIsLoading(true);
@@ -124,7 +133,7 @@ export default function UsersScreen() {
   if (!isAdmin) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <View style={styles.container}>
+        <View style={[styles.container, isLandscape ? styles.containerLandscape : styles.containerPortrait]}>
           <Text style={styles.title}>Access Denied</Text>
           <Text style={styles.text}>You don't have permission to view this page.</Text>
         </View>
@@ -148,9 +157,15 @@ export default function UsersScreen() {
             onChangeRole={() => setRoleUser(item)}
             onDelete={() => setDeleteTarget(item)}
             loading={working}
+            isLandscape={isLandscape}
           />
         )}
-        contentContainerStyle={styles.container}
+        contentContainerStyle={[
+          styles.container,
+          isLandscape
+            ? styles.containerLandscape
+            : styles.containerPortrait,
+        ]}
         ListHeaderComponent={
           <View>
             <Text style={styles.title}>User Management</Text>
@@ -164,7 +179,15 @@ export default function UsersScreen() {
 
       <Modal visible={showCreate} animationType="slide" onRequestClose={() => setShowCreate(false)}>
         <SafeAreaView style={styles.modalSafeArea}>
-          <ScrollView contentContainerStyle={styles.modalContainer}>
+          <ScrollView
+            contentContainerStyle={[
+              styles.modalContainer,
+              isLandscape
+                ? styles.modalContainerLandscape
+                : styles.modalContainerPortrait,
+              modalDimensions,
+            ]}
+          >
             <Text style={styles.modalTitle}>Add New User</Text>
             <StatusMessage message={formError} />
             <UserForm
@@ -177,6 +200,7 @@ export default function UsersScreen() {
               onSubmit={handleCreateUser}
               onCancel={() => setShowCreate(false)}
               loading={working}
+              isLandscape={isLandscape}
             />
           </ScrollView>
         </SafeAreaView>
@@ -184,10 +208,18 @@ export default function UsersScreen() {
 
       <Modal visible={Boolean(roleUser)} transparent animationType="fade" onRequestClose={() => setRoleUser()}>
         <View style={styles.confirmOverlay}>
-          <View style={styles.confirmBox}>
+          <View
+            style={[
+              styles.confirmBox,
+              isLandscape
+                ? styles.confirmBoxLandscape
+                : styles.confirmBoxPortrait,
+              confirmDimensions,
+            ]}
+          >
             <Text style={styles.confirmTitle}>Change Role</Text>
             <Text style={styles.text}>{roleUser?.email}</Text>
-            <View style={styles.roleActions}>
+            <View style={[styles.roleActions, isLandscape ? styles.roleActionsLandscape : styles.roleActionsPortrait]}>
               {['viewer', 'analyst', 'admin'].map((role) => (
                 <AppButton
                   key={role}
@@ -205,7 +237,15 @@ export default function UsersScreen() {
 
       <Modal visible={Boolean(deleteTarget)} transparent animationType="fade" onRequestClose={() => setDeleteTarget()}>
         <View style={styles.confirmOverlay}>
-          <View style={styles.confirmBox}>
+          <View
+            style={[
+              styles.confirmBox,
+              isLandscape
+                ? styles.confirmBoxLandscape
+                : styles.confirmBoxPortrait,
+              confirmDimensions,
+            ]}
+          >
             <Text style={styles.confirmTitle}>Delete User</Text>
             <Text style={styles.text}>Delete {deleteTarget?.email}? This action cannot be undone.</Text>
             <View style={styles.roleActions}>
@@ -225,8 +265,18 @@ const createStyles = (theme) => StyleSheet.create({
     backgroundColor: theme.background,
   },
   container: {
-    padding: 24,
+    width: '100%',
+    alignSelf: 'center',
     paddingBottom: 36,
+  },
+  containerPortrait: {
+    paddingHorizontal: 24,
+    paddingTop: 24,
+  },
+  containerLandscape: {
+    maxWidth: 1000,
+    paddingHorizontal: 32,
+    paddingTop: 20,
   },
   title: {
     fontSize: 26,
@@ -244,8 +294,16 @@ const createStyles = (theme) => StyleSheet.create({
     backgroundColor: theme.background,
   },
   modalContainer: {
-    padding: 24,
+    alignSelf: 'center',
     paddingBottom: 40,
+  },
+  modalContainerPortrait: {
+    paddingHorizontal: 24,
+    paddingTop: 24,
+  },
+  modalContainerLandscape: {
+    paddingHorizontal: 32,
+    paddingTop: 20,
   },
   modalTitle: {
     color: theme.text,
@@ -260,9 +318,16 @@ const createStyles = (theme) => StyleSheet.create({
     padding: 24,
   },
   confirmBox: {
+    alignSelf: 'center',
     backgroundColor: theme.card,
     borderRadius: 8,
     padding: 18,
+  },
+  confirmBoxPortrait: {
+    maxWidth: 520,
+  },
+  confirmBoxLandscape: {
+    maxWidth: 640,
   },
   confirmTitle: {
     color: theme.text,
@@ -273,5 +338,12 @@ const createStyles = (theme) => StyleSheet.create({
   roleActions: {
     gap: 10,
     marginTop: 14,
+  },
+  roleActionsPortrait: {
+    flexDirection: 'column',
+  },
+  roleActionsLandscape: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
   },
 });

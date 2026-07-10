@@ -9,6 +9,7 @@ import StatusMessage from '../../src/components/common/StatusMessage';
 import AlertCard from '../../src/components/alerts/AlertCard';
 import AlertDetails from '../../src/components/alerts/AlertDetails';
 import { useTheme } from '../../src/context/ThemeContext';
+import { useOrientation } from '../../src/hooks/useOrientation';
 import { getAlerts, updateAlertStatus } from '../../src/services/alertsService';
 
 const LIMIT = 25;
@@ -22,6 +23,7 @@ const emptyFilters = {
 
 export default function AlertsScreen() {
   const { theme } = useTheme();
+  const { isLandscape, width, height } = useOrientation();
   const styles = createStyles(theme);
   const [alerts, setAlerts] = useState([]);
   const [filters, setFilters] = useState(emptyFilters);
@@ -143,6 +145,10 @@ export default function AlertsScreen() {
 
   const totalPages = Math.max(Math.ceil(page.total / page.limit), 1);
   const currentPage = Math.floor(page.skip / page.limit) + 1;
+  const modalDimensions = {
+    width: Math.min(width, isLandscape ? 960 : width),
+    minHeight: height,
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -150,7 +156,12 @@ export default function AlertsScreen() {
         data={alerts}
         keyExtractor={(item, index) => item.id || `alert-${index}`}
         renderItem={({ item }) => <AlertCard alert={item} onPress={() => setSelectedAlert(item)} />}
-        contentContainerStyle={styles.container}
+        contentContainerStyle={[
+          styles.container,
+          isLandscape
+            ? styles.containerLandscape
+            : styles.containerPortrait,
+        ]}
         ListHeaderComponent={
           <View>
             <Text style={styles.title}>Security Alerts</Text>
@@ -159,24 +170,40 @@ export default function AlertsScreen() {
 
             <View style={styles.filters}>
               <Text style={styles.filterTitle}>Filters</Text>
-              <ChoiceRow
-                label="Status"
-                value={filters.status}
-                options={['', 'open', 'closed']}
-                onChange={(value) => updateFilter('status', value)}
-              />
-              <ChoiceRow
-                label="Severity"
-                value={filters.severity}
-                options={['', 'low', 'medium', 'high', 'critical']}
-                onChange={(value) => updateFilter('severity', value)}
-              />
-              <AppTextInput label="Search" value={filters.q} onChangeText={(value) => updateFilter('q', value)} placeholder="Search alerts" editable={!isLoading} />
-              <AppTextInput label="From" value={filters.from} onChangeText={(value) => updateFilter('from', value)} placeholder="2026-07-09T10:00:00.000Z" editable={!isLoading} />
-              <AppTextInput label="To" value={filters.to} onChangeText={(value) => updateFilter('to', value)} placeholder="2026-07-09T12:00:00.000Z" editable={!isLoading} />
-              <View style={styles.filterActions}>
-                <AppButton title="Apply" onPress={handleApplyFilters} loading={isLoading} />
-                <AppButton title="Clear" onPress={handleClearFilters} disabled={isLoading} variant="secondary" />
+              <View style={isLandscape ? styles.filterFieldsLandscape : styles.filterFieldsPortrait}>
+                <View style={isLandscape ? styles.filterFieldLandscape : styles.filterFieldPortrait}>
+                  <ChoiceRow
+                    label="Status"
+                    value={filters.status}
+                    options={['', 'open', 'closed']}
+                    onChange={(value) => updateFilter('status', value)}
+                  />
+                </View>
+                <View style={isLandscape ? styles.filterFieldLandscape : styles.filterFieldPortrait}>
+                  <ChoiceRow
+                    label="Severity"
+                    value={filters.severity}
+                    options={['', 'low', 'medium', 'high', 'critical']}
+                    onChange={(value) => updateFilter('severity', value)}
+                  />
+                </View>
+                <View style={isLandscape ? styles.filterFieldLandscape : styles.filterFieldPortrait}>
+                  <AppTextInput label="Search" value={filters.q} onChangeText={(value) => updateFilter('q', value)} placeholder="Search alerts" editable={!isLoading} />
+                </View>
+                <View style={isLandscape ? styles.filterFieldLandscape : styles.filterFieldPortrait}>
+                  <AppTextInput label="From" value={filters.from} onChangeText={(value) => updateFilter('from', value)} placeholder="2026-07-09T10:00:00.000Z" editable={!isLoading} />
+                </View>
+                <View style={isLandscape ? styles.filterFieldLandscape : styles.filterFieldPortrait}>
+                  <AppTextInput label="To" value={filters.to} onChangeText={(value) => updateFilter('to', value)} placeholder="2026-07-09T12:00:00.000Z" editable={!isLoading} />
+                </View>
+              </View>
+              <View style={[styles.filterActions, isLandscape ? styles.filterActionsLandscape : styles.filterActionsPortrait]}>
+                <View style={isLandscape ? styles.filterActionLandscape : styles.filterActionPortrait}>
+                  <AppButton title="Apply" onPress={handleApplyFilters} loading={isLoading} />
+                </View>
+                <View style={isLandscape ? styles.filterActionLandscape : styles.filterActionPortrait}>
+                  <AppButton title="Clear" onPress={handleClearFilters} disabled={isLoading} variant="secondary" />
+                </View>
               </View>
             </View>
 
@@ -206,7 +233,15 @@ export default function AlertsScreen() {
 
       <Modal visible={Boolean(selectedAlert)} animationType="slide" onRequestClose={closeDetails}>
         <SafeAreaView style={styles.modalSafeArea}>
-          <ScrollView>
+          <ScrollView
+            contentContainerStyle={[
+              styles.modalContainer,
+              isLandscape
+                ? styles.modalLandscape
+                : styles.modalPortrait,
+              modalDimensions,
+            ]}
+          >
             <AlertDetails
               alert={selectedAlert}
               onClose={closeDetails}
@@ -214,6 +249,7 @@ export default function AlertsScreen() {
               updating={updating}
               message={successMessage}
               error={updateError}
+              isLandscape={isLandscape}
             />
           </ScrollView>
         </SafeAreaView>
@@ -250,8 +286,18 @@ const createStyles = (theme) => StyleSheet.create({
     backgroundColor: theme.background,
   },
   container: {
-    padding: 24,
+    width: '100%',
+    alignSelf: 'center',
     paddingBottom: 36,
+  },
+  containerPortrait: {
+    paddingHorizontal: 24,
+    paddingTop: 24,
+  },
+  containerLandscape: {
+    maxWidth: 1100,
+    paddingHorizontal: 32,
+    paddingTop: 20,
   },
   title: {
     fontSize: 28,
@@ -308,9 +354,36 @@ const createStyles = (theme) => StyleSheet.create({
     borderColor: theme.primary,
     color: theme.headerText,
   },
+  filterFieldsPortrait: {
+    flexDirection: 'column',
+  },
+  filterFieldsLandscape: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  filterFieldPortrait: {
+    width: '100%',
+  },
+  filterFieldLandscape: {
+    flexBasis: '48%',
+    flexGrow: 1,
+  },
   filterActions: {
     gap: 10,
     marginTop: 4,
+  },
+  filterActionsPortrait: {
+    flexDirection: 'column',
+  },
+  filterActionsLandscape: {
+    flexDirection: 'row',
+  },
+  filterActionPortrait: {
+    width: '100%',
+  },
+  filterActionLandscape: {
+    flex: 1,
   },
   pageText: {
     color: theme.mutedText,
@@ -324,5 +397,14 @@ const createStyles = (theme) => StyleSheet.create({
   modalSafeArea: {
     flex: 1,
     backgroundColor: theme.background,
+  },
+  modalContainer: {
+    alignSelf: 'center',
+  },
+  modalPortrait: {
+    width: '100%',
+  },
+  modalLandscape: {
+    maxWidth: 960,
   },
 });

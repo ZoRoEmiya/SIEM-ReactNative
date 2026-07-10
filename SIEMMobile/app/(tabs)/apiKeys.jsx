@@ -9,11 +9,13 @@ import ApiKeyCard from '../../src/components/apiKeys/ApiKeyCard';
 import ApiKeyForm from '../../src/components/apiKeys/ApiKeyForm';
 import { useAuth } from '../../src/context/AuthContext';
 import { useTheme } from '../../src/context/ThemeContext';
+import { useOrientation } from '../../src/hooks/useOrientation';
 import { createApiKey, getApiKeys, revokeApiKey } from '../../src/services/apiKeysService';
 
 export default function ApiKeysScreen() {
   const { user } = useAuth();
   const { theme } = useTheme();
+  const { isLandscape, width, height } = useOrientation();
   const styles = createStyles(theme);
   const [items, setItems] = useState([]);
   const [newKeyName, setNewKeyName] = useState('');
@@ -26,6 +28,13 @@ export default function ApiKeysScreen() {
   const [error, setError] = useState('');
   const [formError, setFormError] = useState('');
   const isAdmin = user?.role === 'admin';
+  const modalDimensions = {
+    width: Math.min(width, isLandscape ? 720 : width),
+    minHeight: height,
+  };
+  const confirmDimensions = {
+    width: Math.min(Math.max(width - (isLandscape ? 64 : 48), 0), 640),
+  };
 
   const fetchKeys = async () => {
     setIsLoading(true);
@@ -92,7 +101,7 @@ export default function ApiKeysScreen() {
   if (!isAdmin) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <View style={styles.container}>
+        <View style={[styles.container, isLandscape ? styles.containerLandscape : styles.containerPortrait]}>
           <Text style={styles.title}>Access Denied</Text>
           <Text style={styles.text}>You don't have permission to view this page.</Text>
         </View>
@@ -116,7 +125,12 @@ export default function ApiKeysScreen() {
             loading={revokingId === item.id}
           />
         )}
-        contentContainerStyle={styles.container}
+        contentContainerStyle={[
+          styles.container,
+          isLandscape
+            ? styles.containerLandscape
+            : styles.containerPortrait,
+        ]}
         ListHeaderComponent={
           <View>
             <Text style={styles.title}>API Key Management</Text>
@@ -130,7 +144,15 @@ export default function ApiKeysScreen() {
 
       <Modal visible={showCreate} animationType="slide" onRequestClose={() => setShowCreate(false)}>
         <SafeAreaView style={styles.modalSafeArea}>
-          <ScrollView contentContainerStyle={styles.modalContainer}>
+          <ScrollView
+            contentContainerStyle={[
+              styles.modalContainer,
+              isLandscape
+                ? styles.modalContainerLandscape
+                : styles.modalContainerPortrait,
+              modalDimensions,
+            ]}
+          >
             <Text style={styles.modalTitle}>Create API Key</Text>
             <StatusMessage message={formError} />
             <ApiKeyForm
@@ -139,6 +161,7 @@ export default function ApiKeysScreen() {
               onSubmit={handleCreate}
               onCancel={() => setShowCreate(false)}
               loading={creating}
+              isLandscape={isLandscape}
             />
           </ScrollView>
         </SafeAreaView>
@@ -146,7 +169,15 @@ export default function ApiKeysScreen() {
 
       <Modal visible={Boolean(rawKey)} animationType="slide" onRequestClose={() => setRawKey('')}>
         <SafeAreaView style={styles.modalSafeArea}>
-          <ScrollView contentContainerStyle={styles.modalContainer}>
+          <ScrollView
+            contentContainerStyle={[
+              styles.modalContainer,
+              isLandscape
+                ? styles.modalContainerLandscape
+                : styles.modalContainerPortrait,
+              modalDimensions,
+            ]}
+          >
             <Text style={styles.modalTitle}>API Key Created</Text>
             <Text style={styles.warning}>Save this key now. You will not see it again.</Text>
             <Text style={styles.rawKey}>{rawKey}</Text>
@@ -157,7 +188,15 @@ export default function ApiKeysScreen() {
 
       <Modal visible={Boolean(keyToRevoke)} transparent animationType="fade" onRequestClose={() => setKeyToRevoke()}>
         <View style={styles.confirmOverlay}>
-          <View style={styles.confirmBox}>
+          <View
+            style={[
+              styles.confirmBox,
+              isLandscape
+                ? styles.confirmBoxLandscape
+                : styles.confirmBoxPortrait,
+              confirmDimensions,
+            ]}
+          >
             <Text style={styles.confirmTitle}>Revoke API Key</Text>
             <Text style={styles.text}>Revoke {keyToRevoke?.name}? Ingest will stop for systems using this key.</Text>
             <View style={styles.confirmActions}>
@@ -177,8 +216,18 @@ const createStyles = (theme) => StyleSheet.create({
     backgroundColor: theme.background,
   },
   container: {
-    padding: 24,
+    width: '100%',
+    alignSelf: 'center',
     paddingBottom: 36,
+  },
+  containerPortrait: {
+    paddingHorizontal: 24,
+    paddingTop: 24,
+  },
+  containerLandscape: {
+    maxWidth: 1000,
+    paddingHorizontal: 32,
+    paddingTop: 20,
   },
   title: {
     fontSize: 26,
@@ -196,8 +245,16 @@ const createStyles = (theme) => StyleSheet.create({
     backgroundColor: theme.background,
   },
   modalContainer: {
-    padding: 24,
+    alignSelf: 'center',
     paddingBottom: 40,
+  },
+  modalContainerPortrait: {
+    paddingHorizontal: 24,
+    paddingTop: 24,
+  },
+  modalContainerLandscape: {
+    paddingHorizontal: 32,
+    paddingTop: 20,
   },
   modalTitle: {
     color: theme.text,
@@ -228,9 +285,16 @@ const createStyles = (theme) => StyleSheet.create({
     padding: 24,
   },
   confirmBox: {
+    alignSelf: 'center',
     backgroundColor: theme.card,
     borderRadius: 8,
     padding: 18,
+  },
+  confirmBoxPortrait: {
+    maxWidth: 520,
+  },
+  confirmBoxLandscape: {
+    maxWidth: 640,
   },
   confirmTitle: {
     color: theme.text,

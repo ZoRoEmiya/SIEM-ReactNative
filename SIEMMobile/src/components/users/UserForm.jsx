@@ -3,14 +3,20 @@ import AppButton from '../common/AppButton';
 import AppTextInput from '../common/AppTextInput';
 import { useTheme } from '../../context/ThemeContext';
 
-export default function UserForm({ email, password, role, onChangeEmail, onChangePassword, onChangeRole, onSubmit, onCancel, loading }) {
+export default function UserForm({ email, password, role, onChangeEmail, onChangePassword, onChangeRole, onSubmit, onCancel, loading, isLandscape }) {
   const { theme } = useTheme();
   const styles = createStyles(theme);
 
   return (
     <View style={styles.container}>
-      <AppTextInput label="Email" value={email} onChangeText={onChangeEmail} placeholder="user@example.com" keyboardType="email-address" editable={!loading} />
-      <AppTextInput label="Password" value={password} onChangeText={onChangePassword} placeholder="At least 8 characters" secureTextEntry editable={!loading} />
+      <View style={isLandscape ? styles.fieldsLandscape : styles.fieldsPortrait}>
+        <View style={isLandscape ? styles.fieldLandscape : styles.fieldPortrait}>
+          <AppTextInput label="Email" value={email} onChangeText={onChangeEmail} placeholder="user@example.com" keyboardType="email-address" editable={!loading} />
+        </View>
+        <View style={isLandscape ? styles.fieldLandscape : styles.fieldPortrait}>
+          <AppTextInput label="Password" value={password} onChangeText={onChangePassword} placeholder="At least 8 characters" secureTextEntry editable={!loading} />
+        </View>
+      </View>
       <Text style={styles.label}>Role</Text>
       <View style={styles.roleRow}>
         {['viewer', 'analyst', 'admin'].map((item) => (
@@ -23,9 +29,13 @@ export default function UserForm({ email, password, role, onChangeEmail, onChang
           </Text>
         ))}
       </View>
-      <View style={styles.actions}>
-        <AppButton title="Create User" onPress={onSubmit} loading={loading} />
-        <AppButton title="Cancel" onPress={onCancel} disabled={loading} variant="secondary" />
+      <View style={[styles.actions, isLandscape ? styles.actionsLandscape : styles.actionsPortrait]}>
+        <View style={isLandscape ? styles.actionLandscape : styles.actionPortrait}>
+          <AppButton title="Create User" onPress={onSubmit} loading={loading} />
+        </View>
+        <View style={isLandscape ? styles.actionLandscape : styles.actionPortrait}>
+          <AppButton title="Cancel" onPress={onCancel} disabled={loading} variant="secondary" />
+        </View>
       </View>
     </View>
   );
@@ -40,6 +50,19 @@ const createStyles = (theme) => StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     marginBottom: 8,
+  },
+  fieldsPortrait: {
+    flexDirection: 'column',
+  },
+  fieldsLandscape: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  fieldPortrait: {
+    width: '100%',
+  },
+  fieldLandscape: {
+    flex: 1,
   },
   roleRow: {
     flexDirection: 'row',
@@ -65,5 +88,17 @@ const createStyles = (theme) => StyleSheet.create({
   },
   actions: {
     gap: 10,
+  },
+  actionsPortrait: {
+    flexDirection: 'column',
+  },
+  actionsLandscape: {
+    flexDirection: 'row',
+  },
+  actionPortrait: {
+    width: '100%',
+  },
+  actionLandscape: {
+    flex: 1,
   },
 });

@@ -3,11 +3,13 @@ import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 import LoadingBox from '../../src/components/common/LoadingBox';
 import { useAuth } from '../../src/context/AuthContext';
 import { useTheme } from '../../src/context/ThemeContext';
+import { useOrientation } from '../../src/hooks/useOrientation';
 
 export default function TabsLayout() {
   const router = useRouter();
   const { user, isLoading, logout } = useAuth();
   const { theme, isDarkMode, toggleTheme } = useTheme();
+  const { isLandscape } = useOrientation();
   const isAdmin = user?.role === 'admin';
 
   const handleLogout = async () => {
@@ -29,10 +31,14 @@ export default function TabsLayout() {
         headerStyle: { backgroundColor: theme.headerBackground },
         headerTintColor: theme.headerText,
         headerTitleStyle: { color: theme.headerText },
-        tabBarStyle: {
-          backgroundColor: theme.tabBarBackground,
-          borderTopColor: theme.border,
-        },
+        tabBarStyle: [
+          {
+            backgroundColor: theme.tabBarBackground,
+            borderTopColor: theme.border,
+          },
+          isLandscape && styles.tabBarLandscape,
+        ],
+        tabBarLabelStyle: isLandscape ? styles.tabBarLabelLandscape : undefined,
         tabBarActiveTintColor: theme.tabBarActive,
         tabBarInactiveTintColor: theme.tabBarInactive,
         headerRight: () => (
@@ -64,6 +70,14 @@ export default function TabsLayout() {
 }
 
 const styles = StyleSheet.create({
+  tabBarLandscape: {
+    height: 48,
+    paddingTop: 4,
+    paddingBottom: 4,
+  },
+  tabBarLabelLandscape: {
+    fontSize: 11,
+  },
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',

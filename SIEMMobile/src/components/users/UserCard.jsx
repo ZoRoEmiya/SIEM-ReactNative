@@ -3,7 +3,7 @@ import AppButton from '../common/AppButton';
 import { useTheme } from '../../context/ThemeContext';
 import { formatDateTime } from '../../utils/formatDate';
 
-export default function UserCard({ item, currentUserId, onChangeRole, onDelete, loading }) {
+export default function UserCard({ item, currentUserId, onChangeRole, onDelete, loading, isLandscape }) {
   const { theme } = useTheme();
   const styles = createStyles(theme);
   const isCurrentUser = item.id === currentUserId;
@@ -16,9 +16,13 @@ export default function UserCard({ item, currentUserId, onChangeRole, onDelete, 
       </Text>
       <Text style={styles.role}>{item.role}</Text>
       <Text style={styles.detail}>Created: {formatDateTime(item.createdAt)}</Text>
-      <View style={styles.actions}>
-        <AppButton title="Change Role" onPress={onChangeRole} disabled={isCurrentUser || loading} variant="secondary" />
-        <AppButton title="Delete" onPress={onDelete} disabled={isCurrentUser || loading} variant="danger" />
+      <View style={[styles.actions, isLandscape ? styles.actionsLandscape : styles.actionsPortrait]}>
+        <View style={isLandscape ? styles.actionLandscape : styles.actionPortrait}>
+          <AppButton title="Change Role" onPress={onChangeRole} disabled={isCurrentUser || loading} variant="secondary" />
+        </View>
+        <View style={isLandscape ? styles.actionLandscape : styles.actionPortrait}>
+          <AppButton title="Delete" onPress={onDelete} disabled={isCurrentUser || loading} variant="danger" />
+        </View>
       </View>
     </View>
   );
@@ -57,5 +61,17 @@ const createStyles = (theme) => StyleSheet.create({
   },
   actions: {
     gap: 10,
+  },
+  actionsPortrait: {
+    flexDirection: 'column',
+  },
+  actionsLandscape: {
+    flexDirection: 'row',
+  },
+  actionPortrait: {
+    width: '100%',
+  },
+  actionLandscape: {
+    flex: 1,
   },
 });
