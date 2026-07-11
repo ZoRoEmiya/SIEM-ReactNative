@@ -25,7 +25,7 @@ import { formatDateTime } from '../../utils/formatDate';
  */
 export default function AlertDetails({ alert, onClose, onToggleStatus, updating, message, error, isLandscape }) {
   const { theme } = useTheme();
-  const { isHebrew } = useLanguage();
+  const { language, isHebrew } = useLanguage();
   const styles = createStyles(theme);
   const [rate, setRate] = useState(1);
   const [pitch, setPitch] = useState(1);
@@ -61,6 +61,7 @@ export default function AlertDetails({ alert, onClose, onToggleStatus, updating,
       setIsPaused(false);
 
       Speech.speak(speechText, {
+        language: language === 'he' ? 'he-IL' : 'en-US',
         rate,
         pitch,
         onPause: () => {
@@ -120,7 +121,7 @@ export default function AlertDetails({ alert, onClose, onToggleStatus, updating,
     return () => {
       Speech.stop();
     };
-  }, [alert]);
+  }, [alert, language]);
 
   if (!alert) {
     return null;
